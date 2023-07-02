@@ -109,7 +109,17 @@ public class Q2ObjList {
 
    public static <T> void insertBatched(Iterable<T> iterable) {
       SqlClosure.sqlExecute((SqlFunction<T>) connection -> {
-         OrmWriter.insertListBatched(connection, iterable);
+         OrmWriter.insertListBatched(connection, iterable, true);
+         return null;
+      });
+   }
+
+   /**
+    * @see #insertBatched(Connection, Iterable)
+    */
+   public static <T> void insertBatched(Iterable<T> iterable, boolean setGeneratedKeys) {
+      SqlClosure.sqlExecute((SqlFunction<T>) connection -> {
+         OrmWriter.insertListBatched(connection, iterable, setGeneratedKeys);
          return null;
       });
    }
@@ -134,7 +144,7 @@ public class Q2ObjList {
    }
 
    /**
-    * Insert a collection of objects using JDBC batching.
+    * Insert a collection of objects using JDBC batching. Will set an autoincrement object field to its generated value. Be aware that not every database provides generated ids with batch inserts and may throw an exception (e.g. SAP ASE). Use {@link #insertBatched(Connection, Iterable, boolean)} then.
     *
     * @param connection a SQL connection
     * @param iterable a list (or other {@link Iterable} collection) of annotated objects to insert
@@ -142,7 +152,14 @@ public class Q2ObjList {
     * @throws SQLException if a {@link SQLException} occurs
     */
    public static <T> void insertBatched(Connection connection, Iterable<T> iterable) throws SQLException {
-      OrmWriter.insertListBatched(connection, iterable);
+      Q2ObjList.insertBatched(connection, iterable, true);
+   }
+
+   /**
+    * @see #insertBatched(Connection, Iterable)
+    */
+   public static <T> void insertBatched(Connection connection, Iterable<T> iterable, boolean setGeneratedKeys) throws SQLException {
+      OrmWriter.insertListBatched(connection, iterable, setGeneratedKeys);
    }
 
    public static int deleteByWhereClause(Class<?> clazz, String whereClause, Object... args) {

@@ -33,12 +33,21 @@ class DatabaseValueToFieldType {
     */
    Object adaptValueToFieldType(@NotNull final AttributeInfo fcInfo, final Object value, final ResultSetMetaData metaData, final Introspected introspected, final int colIdx) {
       String columnTypeName = null;
+      try {
+         columnTypeName = metaData.getColumnTypeName(colIdx);
+         return adaptValueToFieldType(fcInfo, value, columnTypeName, introspected, colIdx);
+      }
+      catch (Exception e) {
+         logger.error("columnTypeName={}\n fieldType={}\n value={}\n fcInfo={}", columnTypeName, fcInfo.getType(), value, fcInfo);
+         throw new RuntimeException(e);
+      }
+   }
+
+   Object adaptValueToFieldType(@NotNull final AttributeInfo fcInfo, final Object value, final String columnTypeName, final Introspected introspected, final int colIdx) {
       Class<?> fieldType = null;
       try {
          fieldType = fcInfo.getType();
          Object typeCorrectedValue;
-         columnTypeName = metaData.getColumnTypeName(colIdx);
-
          if (value != null && fcInfo.getConverter() != null) {
             typeCorrectedValue = applyConverter(fcInfo, value, introspected, columnTypeName, fieldType);
          }

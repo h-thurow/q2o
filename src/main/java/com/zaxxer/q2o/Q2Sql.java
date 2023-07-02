@@ -124,7 +124,7 @@ public class Q2Sql {
    }
 
    /**
-    * Execute the specified SQL as a PreparedStatement with the specified arguments.
+    * Executes the specified SQL as a PreparedStatement with the specified arguments.
     *
     * @param connection a Connection
     * @param sql the SQL statement to prepare and execute

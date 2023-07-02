@@ -62,7 +62,7 @@ class OrmWriter extends OrmBase
       updateStatementCache.clear();
    }
 
-   static <T> void insertListBatched(final Connection connection, final Iterable<T> iterable) throws SQLException
+   static <T> void insertListBatched(final Connection connection, final Iterable<T> iterable, final boolean setGeneratedValues) throws SQLException
    {
       final Iterator<T> iterableIterator = iterable.iterator();
       if (!iterableIterator.hasNext()) {
@@ -77,13 +77,43 @@ class OrmWriter extends OrmBase
       }
 
       final AttributeInfo[] insertableFcInfos = introspected.getInsertableFcInfos();
-      try (final PreparedStatement stmt = createStatementForInsert(connection, introspected, insertableFcInfos)) {
+      try (final PreparedStatement stmt = createStatementForInsert(connection, introspected, insertableFcInfos, setGeneratedValues)) {
          final int[] parameterTypes = getParameterTypes(stmt);
+         int itemCount = 0;
          for (final T item : iterable) {
             setStatementParameters(item, introspected, insertableFcInfos, stmt, parameterTypes, null);
             stmt.addBatch();
+            itemCount++;
          }
          stmt.executeBatch();
+
+         // Set generated ids on inserted objects where possible
+
+         if (introspected.hasGeneratedId() && setGeneratedValues) {
+            ResultSet generatedKeys = stmt.getGeneratedKeys();
+
+            Object[] generatedIds = new Object[itemCount];
+            String[] columnTypeNames = new String[itemCount];
+            int generatedIdsCount = 0;
+            while (generatedKeys.next()) {
+               generatedIds[generatedIdsCount] = generatedKeys.getObject(1);
+               columnTypeNames[generatedIdsCount] = generatedKeys.getMetaData().getColumnTypeName(1);
+               generatedIdsCount++;
+            }
+            int i = 0;
+            // Not every database supports generated ids with batch inserts. SQLite delivers only the last inserted id.
+            if (generatedIdsCount == itemCount) {
+               for (final T item : iterable) {
+                  AttributeInfo generatedIdFcInfo = introspected.getGeneratedIdFcInfo();
+                  Object typeCorrectedValue = DATABASE_VALUE_TO_FIELD_TYPE.adaptValueToFieldType(generatedIdFcInfo, generatedIds[i], columnTypeNames[i], introspected, 1);
+                  generatedIdFcInfo.setValue(item, typeCorrectedValue);
+                  i++;
+               }
+            }
+         }
+      }
+      catch (IllegalAccessException e) {
+         logger.error("Could not set object's identity field", e);
       }
    }
 
@@ -100,7 +130,7 @@ class OrmWriter extends OrmBase
       final String[] idColumnNames = introspected.getIdColumnNames();
       final AttributeInfo[] insertableFcInfos = introspected.getInsertableFcInfos();
       // Insert
-      try (final PreparedStatement stmt = createStatementForInsert(connection, introspected, insertableFcInfos)) {
+      try (final PreparedStatement stmt = createStatementForInsert(connection, introspected, insertableFcInfos, true)) {
          final int[] parameterTypes = getParameterTypes(stmt);
          for (final T item : iterable) {
             setStatementParameters(item, introspected, insertableFcInfos, stmt, parameterTypes, null);
@@ -123,7 +153,7 @@ class OrmWriter extends OrmBase
       final Class<?> clazz = target.getClass();
       final Introspected introspected = Introspected.getInstance(clazz);
       final AttributeInfo[] insertableFcInfos = introspected.getInsertableFcInfos();
-      try (final PreparedStatement stmt = createStatementForInsert(connection, introspected, insertableFcInfos)) {
+      try (final PreparedStatement stmt = createStatementForInsert(connection, introspected, insertableFcInfos, true)) {
          setParamsExecute(target, introspected, insertableFcInfos, stmt, /*checkExistingId=*/false, null);
       }
       return target;
@@ -218,7 +248,7 @@ class OrmWriter extends OrmBase
 
    private static PreparedStatement createStatementForInsert(final Connection connection,
                                                              final Introspected introspected,
-                                                             final AttributeInfo[] fcInfos) throws SQLException
+                                                             final AttributeInfo[] fcInfos, final boolean setGeneratedValues) throws SQLException
    {
       final String sql = createStatementCache.computeIfAbsent(introspected, key -> {
          final String tableName = introspected.getDelimitedTableName();
@@ -236,7 +266,7 @@ class OrmWriter extends OrmBase
          return sqlSB.toString();
       });
 
-      if (introspected.hasGeneratedId()) {
+      if (introspected.hasGeneratedId() && setGeneratedValues) {
          return connection.prepareStatement(sql, introspected.getIdColumnNames());
       }
       else {
