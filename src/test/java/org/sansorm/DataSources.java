@@ -5,10 +5,13 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.h2.jdbcx.JdbcDataSource;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import javax.sql.DataSource;
 import java.io.File;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public final class DataSources {
    private DataSources() {
@@ -67,6 +70,19 @@ public final class DataSources {
       hconfig.setDataSource(ds);
       hconfig.setMaximumPoolSize(1);
       return new HikariDataSource(hconfig);
+   }
+
+   public static DataSource getSybaseDataSource() throws SQLException
+   {
+      SimpleDriverDataSource ds = new SimpleDriverDataSource();
+      // jdbc:jtds:<server_type>://<server>[:<port>][/<database>][;<property>=<value>[;...]]
+      // TODO Die environment muss auch in Maven gesetzt werden!
+      ds.setUrl(System.getenv("SYBASE_URL"));
+      ds.setUsername(System.getenv("SYBASE_USER"));
+      ds.setPassword(System.getenv("SYBASE_PASS"));
+//      ds.setDriverClass(com.sybase.jdbc4.jdbc.SybDriver.class);
+      ds.setDriver(DriverManager.getDriver("jdbc:sybase:Tds"));
+      return ds;
    }
 
 }

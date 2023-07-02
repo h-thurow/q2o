@@ -1,5 +1,7 @@
 package com.zaxxer.q2o;
 
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -19,6 +21,16 @@ import static org.junit.Assert.*;
  * @since 22.04.18
  */
 public class CompositeKeyTest extends GeneralTestConfigurator {
+
+   @Override
+   @Before
+   public void setUp() throws Exception
+   {
+      super.setUp();
+      if (dataSource == null) {
+         Assume.assumeTrue(false);
+      }
+   }
 
    @Rule
    public ExpectedException thrown = ExpectedException.none();
@@ -59,7 +71,7 @@ public class CompositeKeyTest extends GeneralTestConfigurator {
             " CREATE TABLE TestClass2 ("
                + "id1 VARCHAR(128) NOT NULL, "
                + "id2 VARCHAR(128) NOT NULL, "
-               + "field VARCHAR(128), "
+               + "field VARCHAR(128) NULL, "
                + "PRIMARY KEY (id1, id2)"
                + ")");
 
@@ -93,7 +105,7 @@ public class CompositeKeyTest extends GeneralTestConfigurator {
             " CREATE TABLE TestClass2 ("
                + "id1 VARCHAR(128) NOT NULL, "
                + "id2 VARCHAR(128) NOT NULL, "
-               + "field VARCHAR(128), "
+               + "field VARCHAR(128) NULL, "
                + "PRIMARY KEY (id1, id2)"
                + ")");
 
@@ -126,7 +138,7 @@ public class CompositeKeyTest extends GeneralTestConfigurator {
             " CREATE TABLE TestClass2 ("
                + "id1 VARCHAR(128) NOT NULL, "
                + "id2 VARCHAR(128) NOT NULL, "
-               + "field VARCHAR(128), "
+               + "field VARCHAR(128) NULL, "
                + "PRIMARY KEY (id1, id2)"
                + ")");
 

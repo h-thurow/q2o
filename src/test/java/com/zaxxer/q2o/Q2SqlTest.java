@@ -1,6 +1,8 @@
 package com.zaxxer.q2o;
 
 import org.assertj.core.api.Assertions;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.sansorm.testutils.GeneralTestConfigurator;
 
@@ -18,6 +20,16 @@ import static org.junit.Assert.assertEquals;
  * @since 23.10.18
  */
 public class Q2SqlTest extends GeneralTestConfigurator {
+
+   @Override
+   @Before
+   public void setUp() throws Exception
+   {
+      super.setUp();
+      if (dataSource == null) {
+         Assume.assumeTrue(false);
+      }
+   }
 
    @Test
    public void executeQuery() throws SQLException {
@@ -42,6 +54,14 @@ public class Q2SqlTest extends GeneralTestConfigurator {
                   + " id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT"
                   + ", type VARCHAR(128)"
                   + ")");
+            break;
+         case sybase:
+            Q2Sql.executeUpdate(
+                    "CREATE TABLE MY_TABLE ("
+                            + " id INTEGER IDENTITY"
+                            + ", type VARCHAR(128)"
+                            + ")");
+            break;
 
       }
       try {
@@ -62,8 +82,6 @@ public class Q2SqlTest extends GeneralTestConfigurator {
          Q2Sql.executeUpdate("DROP TABLE MY_TABLE");
       }
    }
-
-
 
    @Test
    public void numbersOrStringsFromSql()
@@ -88,6 +106,13 @@ public class Q2SqlTest extends GeneralTestConfigurator {
                Q2Sql.executeUpdate(
                        "CREATE TABLE mytest ("
                                + " id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT"
+                               + ", note VARCHAR(128)"
+                               + ")");
+               break;
+            case sybase:
+               Q2Sql.executeUpdate(
+                       "CREATE TABLE mytest ("
+                               + " id INTEGER IDENTITY"
                                + ", note VARCHAR(128)"
                                + ")");
                break;

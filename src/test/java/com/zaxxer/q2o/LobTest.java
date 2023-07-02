@@ -10,7 +10,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.sansorm.DataSources;
-import org.sansorm.DataSourcesPrivate;
 import org.sansorm.testutils.Database;
 import org.sansorm.testutils.TxMode;
 
@@ -76,7 +75,7 @@ public class LobTest {
             dataSource = DataSources.getSqLiteDataSource(null);
             break;
          case sybase:
-            dataSource = DataSourcesPrivate.getSybaseDataSource();
+            dataSource = DataSources.getSybaseDataSource();
             break;
       }
 
@@ -141,8 +140,10 @@ public class LobTest {
    @After
    public void tearDown() throws SQLException
    {
-      dropTable();
-      q2o.deinitialize();
+      if (dataSource != null) {
+         dropTable();
+         q2o.deinitialize();
+      }
    }
 
    @Entity

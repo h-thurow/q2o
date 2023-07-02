@@ -5,6 +5,7 @@ import com.zaxxer.q2o.SqlClosure;
 import com.zaxxer.q2o.SqlFunction;
 import com.zaxxer.q2o.SqlVarArgsFunction;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.sansorm.testutils.Database;
@@ -25,26 +26,39 @@ public class SqlClosureTest extends GeneralTestConfigurator {
    @Before
    public void setUp() throws Exception {
       super.setUp();
+      if (dataSource == null) {
+         Assume.assumeTrue(false);
+      }
       if (database == Database.h2Server) {
          Q2Sql.executeUpdate(
-            "CREATE TABLE USERS ("
+            "CREATE TABLE IF NOT EXISTS USERS ("
                + " id INTEGER NOT NULL IDENTITY PRIMARY KEY"
                + ", firstName VARCHAR(128)"
                + ")");
       }
       else if (database == Database.mysql) {
          Q2Sql.executeUpdate(
-            "CREATE TABLE USERS ("
+            "CREATE TABLE IF NOT EXISTS USERS ("
                + " id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT"
                + ", firstName VARCHAR(128)"
                + ")");
       }
       else if (database == Database.sqlite) {
          Q2Sql.executeUpdate(
-            "CREATE TABLE USERS ("
+            "CREATE TABLE IF NOT EXISTS USERS ("
                + " id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT"
                + ", firstName VARCHAR(128)"
                + ")");
+      }
+      else if (database == Database.sybase) {
+         Number object_id = Q2Sql.numberFromSql("select object_id('USERS')");
+         if (object_id == null) {
+            Q2Sql.executeUpdate(
+               "CREATE TABLE USERS ("
+                  + " id INTEGER IDENTITY"
+                  + ", firstName VARCHAR(128)"
+                  + ")");
+         }
       }
 
       Q2Sql.executeUpdate("insert into USERS (firstName) values('one')");
@@ -53,13 +67,14 @@ public class SqlClosureTest extends GeneralTestConfigurator {
 
    @After
    public void tearDown() throws Exception {
-      try {
-         Q2Sql.executeUpdate("DROP TABLE USERS");
+      if (dataSource != null) {
+         try {
+            Q2Sql.executeUpdate("DROP TABLE USERS");
+         }
+         finally {
+            super.tearDown();
+         }
       }
-      finally {
-         super.tearDown();
-      }
-
    }
 
    /**

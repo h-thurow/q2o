@@ -1,10 +1,7 @@
 package org.sansorm;
 
 import com.zaxxer.q2o.*;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.sansorm.testutils.Database;
 import org.sansorm.testutils.GeneralTestConfigurator;
 
@@ -12,10 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -26,49 +20,67 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class QueryTest extends GeneralTestConfigurator {
 
    @SuppressWarnings("SqlNoDataSourceInspection")
+   @Override
    @Before
    public void setUp() throws Exception {
 
       super.setUp();
 
-      if (database == Database.h2Server) {
-         Q2Sql.executeUpdate(
-            "CREATE TABLE target_class1 ("
-               + "id INTEGER NOT NULL IDENTITY PRIMARY KEY, "
-               + "timestamp TIMESTAMP, "
-               + "string VARCHAR(128), "
-               + "string_from_number NUMERIC "
-               + ")");
+      if (dataSource == null) {
+         Assume.assumeTrue(false);
       }
-      else if (database == Database.mysql) {
-//      else {
-         Q2Sql.executeUpdate(
-            "CREATE TABLE target_class1 ("
-               + "id INTEGER PRIMARY KEY AUTO_INCREMENT, "
-               + "timestamp TIMESTAMP, "
-               + "string VARCHAR(128), "
-               + "string_from_number NUMERIC "
-               + ")");
-      }
-      else if (database == Database.sqlite) {
-         String ddl = "CREATE TABLE target_class1 ("
-            + "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT"
-            + ", timestamp TIMESTAMP"
-            + ", string VARCHAR(128)"
-            + ", string_from_number NUMERIC"
-            + ")";
-         Q2Sql.executeUpdate(ddl);
+      else {
+         if (database == Database.h2Server) {
+            Q2Sql.executeUpdate(
+               "CREATE TABLE target_class1 ("
+                  + "id INTEGER NOT NULL IDENTITY PRIMARY KEY, "
+                  + "timestamp TIMESTAMP, "
+                  + "string VARCHAR(128), "
+                  + "string_from_number NUMERIC "
+                  + ")");
+         }
+         else if (database == Database.mysql) {
+   //      else {
+            Q2Sql.executeUpdate(
+               "CREATE TABLE target_class1 ("
+                  + "id INTEGER PRIMARY KEY AUTO_INCREMENT, "
+                  + "timestamp TIMESTAMP, "
+                  + "string VARCHAR(128), "
+                  + "string_from_number NUMERIC "
+                  + ")");
+         }
+         else if (database == Database.sqlite) {
+            String ddl = "CREATE TABLE target_class1 ("
+               + "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT"
+               + ", timestamp TIMESTAMP"
+               + ", string VARCHAR(128)"
+               + ", string_from_number NUMERIC"
+               + ")";
+            Q2Sql.executeUpdate(ddl);
+         }
+
+         else if (database == Database.sybase && dataSource != null) {
+            String ddl = "CREATE TABLE target_class1 ("
+                    + "id numeric(8,0) identity"
+                    + ", timestamp DATETIME NULL"
+                    + ", string VARCHAR(128) NULL"
+                    + ", string_from_number INTEGER NULL"
+                    + ")";
+            Q2Sql.executeUpdate(ddl);
+         }
       }
    }
 
    @After
    public void tearDown() {
-      try {
-         Q2Sql.executeUpdate(
-            "DROP TABLE target_class1");
-      }
-      finally {
-         q2o.deinitialize();
+      if (dataSource != null) {
+         try {
+            Q2Sql.executeUpdate(
+               "DROP TABLE target_class1");
+         }
+         finally {
+            q2o.deinitialize();
+         }
       }
    }
 
@@ -136,14 +148,13 @@ public class QueryTest extends GeneralTestConfigurator {
       target = Q2Obj.byId(TargetTimestampClass1.class, target.getId());
 
       assertThat(target.getString()).isEqualTo("Timestamp");
-      assertThat(target.getTimestamp().getClass()).isEqualTo(Timestamp.class);
+      assertThat(target.getTimestamp()).isInstanceOf(Timestamp.class);
       String expected = "";
       switch (database) {
          case mysql:
          case sqlite:
-            expected = "2019-04-14 07:11:21.0";
-            break;
          case h2Server:
+         case sybase:
             expected = "2019-04-14 07:11:21.0";
             break;
          default:
@@ -186,7 +197,7 @@ public class QueryTest extends GeneralTestConfigurator {
    public void insertListNotBatched2() {
       // given
       int count = 5;
-      Set<TargetClass1> toInsert = IntStream.range(0, count).boxed()
+      Set<TargetClass1> objsToInsert = IntStream.range(0, count).boxed()
          .map(i -> {
             Date date = new Date(Timestamp.valueOf("2019-04-14 07:11:21").getTime());
             return new TargetClass1(date, String.valueOf(i));
@@ -195,12 +206,12 @@ public class QueryTest extends GeneralTestConfigurator {
 
       // when
       SqlClosure.sqlExecute(c -> {
-         Q2ObjList.insertNotBatched(c, toInsert);
+         Q2ObjList.insertNotBatched(c, objsToInsert);
          return null;
       });
 
       // then
-      Set<Integer> generatedIds = toInsert.stream().map(BaseClass::getId).collect(Collectors.toSet());
+      Set<Integer> generatedIds = objsToInsert.stream().map(BaseClass::getId).collect(Collectors.toSet());
       assertThat(generatedIds).doesNotContain(0).as("Generated ids should be filled for passed objects");
       assertThat(generatedIds).hasSize(count).as("Generated ids should be unique");
    }
@@ -208,36 +219,74 @@ public class QueryTest extends GeneralTestConfigurator {
    @Test
    public void insertListBatched() {
 
+      if (database == Database.sybase) {
+         // SAP ASE does not support generated key retrieval with batch inserts and throws a
+         //    BatchUpdateException: JZ0BE: BatchUpdateException: Error occurred while executing batch statement: JZ0P1: Unexpected result type
+         // because q2o calls Connection.prepareStatement(java.lang.String, java.lang.String[]) when a property is found annotated with @GeneratedValue.
+         return;
+      }
+
       // Create objects
 
-      int count = 1;
+      int count = 3;
       String uuid = UUID.randomUUID().toString();
-      Set<TargetClass1> toInsert = IntStream.range(0, count).boxed()
-         .map(i -> {
-            Date date = new Date(Timestamp.valueOf("2019-04-14 07:11:21").getTime());
-            return new TargetClass1(date, uuid + i);
-         })
-         .collect(Collectors.toSet());
+      String[] uuids = IntStream.range(0, count).boxed().map(i -> uuid + i).collect(Collectors.toList()).toArray(new String[]{});
+
+      Set<TargetClass1> objsToInsert = Arrays.stream(uuids).map(_uuid -> {
+         Date date = new Date(Timestamp.valueOf("2019-04-14 07:11:21").getTime());
+         return new TargetClass1(date, _uuid);
+      }).collect(Collectors.toSet());
 
       // INSERT objects
 
       SqlClosure.sqlExecute(c -> {
-         Q2ObjList.insertBatched(c, toInsert);
+         Q2ObjList.insertBatched(c, objsToInsert);
          return null;
       });
 
       // SELECT objects
 
-      Object[] inParams = IntStream.range(0, count).boxed().map(i -> uuid + i).collect(Collectors.toList()).toArray(new Object[]{});
-      List<TargetClass1> inserted = Q2ObjList.fromClause(
-         TargetClass1.class,
-         "string in " + Q2Sql.getInClausePlaceholdersForCount(count),
-         inParams);
+      if (database == Database.sqlite) {
+         // Not every database supports generated ids with batch inserts. SQLite delivers only the last inserted id.
 
-      // Verify objects
+         List<TargetClass1> insertedObjs = Q2ObjList.fromClause(
+            TargetClass1.class,
+            "string in " + Q2Sql.getInClausePlaceholdersForCount(count),
+                 (Object[]) uuids);
 
-      Set<Integer> generatedIds = inserted.stream().map(BaseClass::getId).collect(Collectors.toSet());
-      assertThat(generatedIds).doesNotContain(0).as("Generated ids should be filled for passed objects");
-      assertThat(generatedIds).hasSize(count).as("Generated ids should be unique");
+         // Verify objects
+
+         Set<Integer> generatedIds = insertedObjs.stream().map(BaseClass::getId).collect(Collectors.toSet());
+         assertThat(generatedIds).doesNotContain(0).as("Generated ids should be filled for passed objects");
+         assertThat(generatedIds).hasSize(count).as("Generated ids should be unique");
+      }
+      else {
+         assertThat(objsToInsert).extracting("id").containsExactly(1, 2, 3);
+      }
+   }
+
+   @Test
+   public void insertListBatchedGeneratedValuesNotSupported() {
+
+      // Create objects
+
+      int count = 3;
+      String uuid = UUID.randomUUID().toString();
+      String[] uuids = IntStream.range(0, count).boxed().map(i -> uuid + i).collect(Collectors.toList()).toArray(new String[]{});
+
+      Set<TargetClass1> objsToInsert = Arrays.stream(uuids).map(_uuid -> {
+         Date date = new Date(Timestamp.valueOf("2019-04-14 07:11:21").getTime());
+         return new TargetClass1(date, _uuid);
+      }).collect(Collectors.toSet());
+
+      // INSERT objects
+
+      Q2ObjList.insertBatched(objsToInsert, false);
+
+      // SELECT objects
+
+      Set<Integer> generatedIds = objsToInsert.stream().map(BaseClass::getId).collect(Collectors.toSet());
+      assertThat(generatedIds).containsOnly(0);
+
    }
 }

@@ -2,15 +2,11 @@ package com.zaxxer.q2o;
 
 import com.mysql.cj.jdbc.BlobFromLocator;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.sansorm.DataSources;
-import org.sansorm.DataSourcesPrivate;
 import org.sansorm.testutils.Database;
 import org.sansorm.testutils.TxMode;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -47,9 +43,9 @@ public class LobSpringTxTest {
    public static Collection<Object[]> data() {
       Object[][] params = {
 //         {true, TxMode.springTx, Database.h2Server}, {true, TxMode.springTx, Database.mysql}
-//         {true, TxMode.springTx, Database.h2Server}, {true, TxMode.springTx, Database.mysql}, {true, TxMode.springTx, Database.sybase}
+         {true, TxMode.springTx, Database.h2Server}, {true, TxMode.springTx, Database.mysql}, {true, TxMode.springTx, Database.sybase}
 //         {true, TxMode.springTx, Database.mysql}
-         {true, TxMode.springTx, Database.sybase}
+//         {true, TxMode.springTx, Database.sybase}
 //         {true, TxMode.springTx, Database.h2Server}
 //         {true, TxMode.springTx, Database.sqlite} // java.sql.Blob not supported.
 
@@ -71,10 +67,15 @@ public class LobSpringTxTest {
    public void setUp() throws IOException, SQLException
    {
       initDataSource();
-      initQ2O();
-      dropTable();
-      createTable();
-      createSpringEnv();
+      if (dataSource == null) {
+         Assume.assumeTrue(false);
+      }
+      else {
+         initQ2O();
+         dropTable();
+         createTable();
+         createSpringEnv();
+      }
    }
 
    private void initDataSource() throws SQLException
@@ -90,7 +91,9 @@ public class LobSpringTxTest {
             dataSource = DataSources.getSqLiteDataSource(null);
             break;
          case sybase:
-            dataSource = DataSourcesPrivate.getSybaseDataSource();
+            if (System.getenv().containsKey("SYBASE_URL")) {
+               dataSource = DataSources.getSybaseDataSource();
+            }
             break;
       }
    }
@@ -131,7 +134,8 @@ public class LobSpringTxTest {
                "create table MYLOB (" +
                   "ID INTEGER NOT NULL AUTO_INCREMENT" +
                   ", MYBLOB BLOB" +
-                  ", MYCLOB TEXT" +
+                       /* "To store strings in MySQL with LOB behavior, use one of the TEXT types, which the driver will treat as a java.sql.Clob." (MySQL 5.5 Reference Manual) */
+                  ", MYCLOB MEDIUMTEXT" +
                   ", PRIMARY KEY (id)" +
                   ")");
             break;
@@ -155,16 +159,18 @@ public class LobSpringTxTest {
 
    private void dropTable() throws SQLException
    {
-      if (database != Database.sybase) {
-         Q2Sql.executeUpdate("drop table if exists MYLOB");
-      }
-      else {
-         // com.sybase.jdbc4.jdbc.SybSQLException: The 'DROP TABLE' command is not allowed within a multi-statement transaction in the 'opixcntl' database.
-         Connection con = dataSource.getConnection();
-         Q2Sql.executeUpdate(
-            con,
-            "if object_id('MYLOB') != null drop table MYLOB");
-         con.close();
+      if (dataSource != null) {
+         if (database != Database.sybase) {
+            Q2Sql.executeUpdate("drop table if exists MYLOB");
+         }
+         else {
+            // com.sybase.jdbc4.jdbc.SybSQLException: The 'DROP TABLE' command is not allowed within a multi-statement transaction in the 'opixcntl' database.
+            Connection con = dataSource.getConnection();
+            Q2Sql.executeUpdate(
+               con,
+               "if object_id('MYLOB') != null drop table MYLOB");
+            con.close();
+         }
       }
    }
 
@@ -450,8 +456,8 @@ public class LobSpringTxTest {
 
    private void insertClobAsString() throws SQLException, IOException
    {
-      File img = new File("src/test/resources/rfc2616.txt");
-      FileInputStream textInputStream = new FileInputStream(img);
+      File textFile = new File("src/test/resources/rfc2616.txt");
+      FileInputStream textInputStream = new FileInputStream(textFile);
       String text = IOUtils.toString(textInputStream, "UTF8");
       textInputStream.close();
 

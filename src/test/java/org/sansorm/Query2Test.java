@@ -4,10 +4,7 @@ import com.zaxxer.q2o.Q2Obj;
 import com.zaxxer.q2o.Q2ObjList;
 import com.zaxxer.q2o.Q2Sql;
 import com.zaxxer.q2o.q2o;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.sansorm.testutils.Database;
 import org.sansorm.testutils.GeneralTestConfigurator;
 
@@ -28,6 +25,10 @@ public class Query2Test extends GeneralTestConfigurator {
    public void setUp() throws Exception {
 
       super.setUp();
+
+      if (dataSource == null) {
+         Assume.assumeTrue(false);
+      }
 
       if (database == Database.h2Server) {
          Q2Sql.executeUpdate(
@@ -54,15 +55,25 @@ public class Query2Test extends GeneralTestConfigurator {
                + " someDate TIMESTAMP"
                + " )");
       }
+      else if (database == Database.sybase) {
+         Q2Sql.executeUpdate(
+            "CREATE TABLE TargetClass2 ("
+               + " id INTEGER IDENTITY,"
+               + " string VARCHAR(128),"
+               + " someDate DATETIME NULL"
+               + " )");
+      }
    }
 
    @After
    public void tearDown() {
-      try {
-         Q2Sql.executeUpdate("drop table TargetClass2");
-      }
-      finally {
-         q2o.deinitialize();
+      if (dataSource != null) {
+         try {
+            Q2Sql.executeUpdate("drop table TargetClass2");
+         }
+         finally {
+            q2o.deinitialize();
+         }
       }
    }
 
@@ -105,7 +116,7 @@ public class Query2Test extends GeneralTestConfigurator {
       TargetClass2 original2 = new TargetClass2(date2, string);
       TargetClass2 insertedObj2 = insert(original2);
 
-      List<TargetClass2> targetClasses = Q2ObjList.fromRawClause(TargetClass2.class, "ORDER BY somedate DESC");
+      List<TargetClass2> targetClasses = Q2ObjList.fromRawClause(TargetClass2.class, "ORDER BY someDate DESC");
       assertThat(targetClasses).hasSize(2);
       assertThat(insertedObj2).isEqualToComparingFieldByField(targetClasses.get(0));
    }

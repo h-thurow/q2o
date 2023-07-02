@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.sansorm.DataSources;
-import org.sansorm.DataSourcesPrivate;
 import org.sansorm.testutils.Database;
 import org.sansorm.testutils.TxMode;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -66,7 +65,7 @@ public class LobSybaseSpecificTest {
             dataSource = DataSources.getSqLiteDataSource(null);
             break;
          case sybase:
-            dataSource = DataSourcesPrivate.getSybaseDataSource();
+            dataSource = DataSources.getSybaseDataSource();
             break;
       }
    }

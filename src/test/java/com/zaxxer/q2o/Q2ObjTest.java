@@ -3,6 +3,8 @@ package com.zaxxer.q2o;
 import com.zaxxer.q2o.entities.CompositeKey;
 import com.zaxxer.q2o.entities.FarRight1;
 import com.zaxxer.q2o.entities.Left;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -23,6 +25,16 @@ import static org.junit.Assert.*;
  * @since 10.04.18
  */
 public class Q2ObjTest extends GeneralTestConfigurator {
+
+   @Override
+   @Before
+   public void setUp() throws Exception
+   {
+      super.setUp();
+      if (dataSource == null) {
+         Assume.assumeTrue(false);
+      }
+   }
 
    @Rule
    public ExpectedException thrown = ExpectedException.none();
@@ -113,6 +125,13 @@ public class Q2ObjTest extends GeneralTestConfigurator {
                   + ", type VARCHAR(128)"
                   + ")");
          }
+         else if (database == Database.sybase) {
+            Q2Sql.executeUpdate(
+                    "CREATE TABLE LEFT_TABLE ("
+                            + " id numeric(8,0) identity"
+                            + ", type VARCHAR(128)"
+                            + ")");
+         }
          Left left = new Left();
          left.setType("test");
          Q2Obj.insert(left);
@@ -133,13 +152,14 @@ public class Q2ObjTest extends GeneralTestConfigurator {
    @Test
    public void byCompositeKeyWithTarget() {
       try {
+
          Q2Sql.executeUpdate(
-            "CREATE TABLE COMPOSITEKEY ("
-               + " id1 BIGINT NOT NULL"
-               + ", id2 BIGINT NOT NULL"
-               + ", note VARCHAR(128)"
-               + ", PRIMARY KEY (id1, id2)"
-               + ")");
+                 "CREATE TABLE CompositeKey ("
+                         + " id1 BIGINT NOT NULL"
+                         + ", id2 BIGINT NOT NULL"
+                         + ", note VARCHAR(128)"
+                         + ", PRIMARY KEY (id1, id2)"
+                         + ")");
 
          CompositeKey compositeKey = new CompositeKey();
          compositeKey.setId1(1);
@@ -156,7 +176,7 @@ public class Q2ObjTest extends GeneralTestConfigurator {
 
       }
       finally {
-         Q2Sql.executeUpdate("drop table COMPOSITEKEY");
+         Q2Sql.executeUpdate("drop table CompositeKey");
       }
    }
 
@@ -202,6 +222,14 @@ public class Q2ObjTest extends GeneralTestConfigurator {
                      + " id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT"
                      + ", note VARCHAR(128)"
                      + ", note2 VARCHAR(128)"
+                     + ")");
+               break;
+            case sybase:
+               Q2Sql.executeUpdate(
+                  "CREATE TABLE IncludeColumns ("
+                     + " id INTEGER IDENTITY"
+                     + ", note VARCHAR(128)"
+                     + ", note2 VARCHAR(128) NULL"
                      + ")");
                break;
          }
@@ -252,6 +280,14 @@ public class Q2ObjTest extends GeneralTestConfigurator {
                      + " id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT"
                      + ", note VARCHAR(128)"
                      + ", note2 VARCHAR(128)"
+                     + ")");
+               break;
+            case sybase:
+               Q2Sql.executeUpdate(
+                  "CREATE TABLE IncludeColumns ("
+                     + " id INTEGER IDENTITY"
+                     + ", note VARCHAR(128)"
+                     + ", note2 VARCHAR(128) NULL"
                      + ")");
                break;
          }
@@ -339,6 +375,15 @@ public class Q2ObjTest extends GeneralTestConfigurator {
                Q2Sql.executeUpdate(
                   "CREATE TABLE MyClass ("
                      + " id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT"
+                     + ", note VARCHAR(128)"
+                     + ", note2 VARCHAR(128)"
+                     + ", notExistingInEntity VARCHAR(128)"
+                     + ")");
+               break;
+            case sybase:
+               Q2Sql.executeUpdate(
+                  "CREATE TABLE MyClass ("
+                     + " id INTEGER identity"
                      + ", note VARCHAR(128)"
                      + ", note2 VARCHAR(128)"
                      + ", notExistingInEntity VARCHAR(128)"

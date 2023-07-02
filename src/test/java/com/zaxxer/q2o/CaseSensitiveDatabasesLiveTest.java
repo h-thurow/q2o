@@ -2,6 +2,8 @@ package com.zaxxer.q2o;
 
 import com.zaxxer.q2o.entities.DelimitedFields;
 import org.h2.jdbcx.JdbcDataSource;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.sansorm.DataSources;
 import org.sansorm.testutils.GeneralTestConfigurator;
@@ -19,6 +21,16 @@ import static org.junit.Assert.assertNotNull;
  * @since 2019-04-15
  */
 public class CaseSensitiveDatabasesLiveTest extends GeneralTestConfigurator {
+
+   @Override
+   @Before
+   public void setUp() throws Exception
+   {
+      super.setUp();
+      if (dataSource == null) {
+         Assume.assumeTrue(false);
+      }
+   }
 
    @Test
    public void insertObject() {

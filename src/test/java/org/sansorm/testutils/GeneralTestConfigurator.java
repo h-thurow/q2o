@@ -21,10 +21,11 @@ public class GeneralTestConfigurator {
    @Parameterized.Parameters(name = "springTxSupport={0}, database={1}")
    public static Collection<Object[]> data() {
       return Arrays.asList(new Object[][] {
-         {false, Database.h2Server}, {true, Database.h2Server}, {false, Database.mysql}, {true, Database.mysql}, {false, Database.sqlite}, {true, Database.sqlite}
+         {false, Database.h2Server}, {true, Database.h2Server}, {false, Database.mysql}, {true, Database.mysql}, {false, Database.sqlite}, {true, Database.sqlite}, {false, Database.sybase}, {true, Database.sybase}
 //         {false, Database.mysql}
 //         {false, Database.h2Server}
 //         {true, Database.sqlite}
+//         {true, Database.sybase}
       });
    }
 
@@ -49,13 +50,19 @@ public class GeneralTestConfigurator {
          case sqlite:
             dataSource = DataSources.getSqLiteDataSource(null);
             break;
+         case sybase:
+            if (System.getenv().containsKey("SYBASE_URL")) {
+               dataSource = DataSources.getSybaseDataSource();
+            }
       }
 
-      if (!withSpringTx) {
-         q2o.initializeTxNone(dataSource);
-      }
-      else {
-         q2o.initializeWithSpringTxSupport(dataSource);
+      if (dataSource != null) {
+         if (!withSpringTx) {
+            q2o.initializeTxNone(dataSource);
+         }
+         else {
+            q2o.initializeWithSpringTxSupport(dataSource);
+         }
       }
 
       if (database == Database.mysql) {
@@ -67,5 +74,6 @@ public class GeneralTestConfigurator {
    @After
    public void tearDown()throws Exception {
       q2o.deinitialize();
+      dataSource = null;
    }
 }
