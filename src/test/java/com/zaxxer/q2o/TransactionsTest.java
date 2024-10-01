@@ -7,9 +7,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.sansorm.DataSources;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 import javax.sql.DataSource;
-import javax.transaction.Transaction;
+import jakarta.transaction.Transaction;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;

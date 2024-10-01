@@ -1,7 +1,7 @@
 package com.zaxxer.q2o.converters;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 import java.sql.Time;
 import java.util.Calendar;
 

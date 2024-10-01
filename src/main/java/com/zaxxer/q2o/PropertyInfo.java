@@ -1,7 +1,8 @@
 package com.zaxxer.q2o;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -24,9 +25,18 @@ class PropertyInfo extends AttributeInfo {
 
    protected void extractFieldName(final Field field) {
       try {
-         propertyDescriptor = new PropertyDescriptor(field.getName(), getOwnerClazz());
-         readMethod = propertyDescriptor.getReadMethod();
-         name = propertyDescriptor.getName();
+         Class<?> ownerClass = getOwnerClazz();
+         PropertyDescriptor[] propertyDescriptors = Introspector.getBeanInfo(ownerClass).getPropertyDescriptors();
+
+         for (PropertyDescriptor pd : propertyDescriptors) {
+            if (pd.getName().equals(field.getName())) {
+               propertyDescriptor = pd;
+               readMethod = pd.getReadMethod();
+               name = pd.getName();
+
+               break;
+            }
+         }
       }
       catch (IntrospectionException ignored) {
          // In case of fields with no getters/setters according to JavaBean conventions.

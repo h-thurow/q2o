@@ -17,11 +17,13 @@
 package com.zaxxer.q2o;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -423,7 +425,11 @@ final class Introspected {
    private void analyzeExlicitFieldAccess(final List<Field> declaredFields, final Class<?> cl) {
       declaredFields.forEach(field -> {
          try {
-            final PropertyDescriptor descriptor = new PropertyDescriptor(field.getName(), cl);
+            PropertyDescriptor descriptor = getPropertyDescriptor(field, cl);
+            if (descriptor == null) {
+               throw new RuntimeException("PropertyDescriptor for field '" + field.getName() + "' cloud not be found");
+            }
+
             final Method readMethod = descriptor.getReadMethod();
             final Access accessTypeOnMethod = readMethod.getAnnotation(Access.class);
             final Access accessTypeOnField = field.getDeclaredAnnotation(Access.class);
@@ -452,7 +458,11 @@ final class Introspected {
    private void analyzeExplicitPropertyAccess(final List<Field> declaredFields, final Class<?> cl) {
       declaredFields.forEach(field -> {
          try {
-            final PropertyDescriptor descriptor = new PropertyDescriptor(field.getName(), cl);
+            PropertyDescriptor descriptor = getPropertyDescriptor(field, cl);
+            if (descriptor == null) {
+               throw new RuntimeException("PropertyDescriptor for field '" + field.getName() + "' cloud not be found");
+            }
+
             final Method readMethod = descriptor.getReadMethod();
             final Access accessTypeOnMethod = readMethod.getAnnotation(Access.class);
             final Access accessTypeOnField = field.getDeclaredAnnotation(Access.class);
@@ -477,6 +487,25 @@ final class Introspected {
          }
 
       });
+   }
+
+   /**
+    * Retrieves the {@link PropertyDescriptor} for a given field from the specified class.
+    * This method introspects the class to find a property descriptor that matches the name of the provided field.
+    */
+   @Nullable
+   private PropertyDescriptor getPropertyDescriptor(final Field field, final Class<?> cl) throws IntrospectionException {
+      PropertyDescriptor[] propertyDescriptors = Introspector.getBeanInfo(cl).getPropertyDescriptors();
+
+      PropertyDescriptor descriptor = null;
+      for (PropertyDescriptor pd : propertyDescriptors) {
+         if (pd.getName().equals(field.getName())) {
+            descriptor = pd;
+            break;
+         }
+      }
+
+      return descriptor;
    }
 
    /**

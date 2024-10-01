@@ -5,7 +5,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.sansorm.DataSources;
 
-import javax.persistence.Id;
+import jakarta.persistence.Id;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

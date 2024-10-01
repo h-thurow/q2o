@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.sansorm.TargetClass1;
 import org.sansorm.sqlite.TargetClassSQL;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -12,7 +12,7 @@ import org.sansorm.testutils.TxMode;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileInputStream;

@@ -3,8 +3,8 @@ package com.zaxxer.sansorm;
 import com.zaxxer.q2o.q2o;
 
 import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.UserTransaction;
 
 /** Single point of SansOrm configuration
  * @deprecated

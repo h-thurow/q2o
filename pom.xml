@@ -37,20 +37,23 @@
          <name>Holger Thurow</name>
          <email>thurow.h@gmail.com</email>
       </developer>
+      <developer>
+         <name>Paul Hafner</name>
+         <email>paulhafner1999@gmail.com</email>
+      </developer>
    </developers>
 
    <dependencies>
       <dependency>
-         <groupId>org.eclipse.persistence</groupId>
-         <artifactId>javax.persistence</artifactId>
-         <version>2.1.0</version>
-         <scope>provided</scope>
+         <groupId>jakarta.persistence</groupId>
+         <artifactId>jakarta.persistence-api</artifactId>
+         <version>3.1.0</version>
       </dependency>
       <dependency>
-         <groupId>javax.transaction</groupId>
-         <artifactId>transaction-api</artifactId>
-         <version>1.1</version>
-         <scope>provided</scope>
+         <groupId>jakarta.transaction</groupId>
+         <artifactId>jakarta.transaction-api</artifactId>
+         <version>2.0.1</version>
+         <scope>compile</scope>
       </dependency>
       <dependency>
          <groupId>org.slf4j</groupId>
@@ -70,13 +73,6 @@
                <artifactId>junit</artifactId>
             </exclusion>
          </exclusions>
-      </dependency>
-      <dependency>
-         <groupId>javax.transaction</groupId>
-         <artifactId>javax.transaction-api</artifactId>
-         <version>1.2</version>
-         <scope>compile</scope>
-         <optional>true</optional>
       </dependency>
       <dependency>
          <groupId>junit</groupId>

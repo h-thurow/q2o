@@ -5,8 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.sansorm.testutils.GeneralTestConfigurator;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 import static org.junit.Assert.assertEquals;
 

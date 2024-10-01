@@ -3,7 +3,7 @@ package com.zaxxer.q2o;
 import com.zaxxer.q2o.converters.*;
 import org.jetbrains.annotations.NotNull;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;

@@ -1,6 +1,6 @@
 package opix.domain.filetypes.filetypes;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * @author Holger Thurow (thurow.h@gmail.com)

@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import javax.transaction.*;
+import jakarta.transaction.*;
 
 public final class TransactionHelper
 {

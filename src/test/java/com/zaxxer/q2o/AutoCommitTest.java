@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.sansorm.DataSources;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;

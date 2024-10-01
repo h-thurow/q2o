@@ -17,7 +17,7 @@
 package com.zaxxer.q2o.transaction;
 
 import javax.sql.DataSource;
-import javax.transaction.Status;
+import jakarta.transaction.Status;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;

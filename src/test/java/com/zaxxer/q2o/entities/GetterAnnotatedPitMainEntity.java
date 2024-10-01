@@ -1,6 +1,6 @@
 package com.zaxxer.q2o.entities;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.sql.Timestamp;
 import java.util.Collection;
 

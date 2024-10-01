@@ -17,7 +17,7 @@
 package com.zaxxer.q2o.transaction;
 
 import javax.sql.DataSource;
-import javax.transaction.*;
+import jakarta.transaction.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 

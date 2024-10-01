@@ -13,7 +13,7 @@ import org.sansorm.DataSources;
 import org.sansorm.testutils.Database;
 import org.sansorm.testutils.TxMode;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileInputStream;

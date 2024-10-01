@@ -9,10 +9,10 @@ import org.junit.Test;
 import org.sansorm.DataSources;
 import org.sansorm.testutils.*;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.sql.*;
 
 import static com.zaxxer.q2o.Q2Obj.insert;
