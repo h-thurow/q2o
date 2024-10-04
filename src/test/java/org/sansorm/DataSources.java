@@ -5,8 +5,10 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.h2.jdbcx.JdbcDataSource;
 import org.jetbrains.annotations.Nullable;
+import org.sansorm.testutils.GeneralTestConfigurator;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+import org.testcontainers.containers.MySQLContainer;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -35,7 +37,7 @@ public final class DataSources {
       return dataSource;
    }
 
-   public static DataSource getMySqlDataSource(String dbName, String user, String password) {
+   public static DataSource getMySqlDataSource() {
 //      conn =
 //         DriverManager.getConnection("jdbc:mysql://localhost/q2o?" +
 //            "user=root&password=opixcntl&generateSimpleParameterMetadata=true");
@@ -48,7 +50,9 @@ public final class DataSources {
 //      dataSource.setGenerateSimpleParameterMetadata(true);
 
       MysqlDataSource dataSource = new MysqlDataSource();
-      dataSource.setUrl(String.format("jdbc:mysql://localhost/%s?user=%s&password=%s&generateSimpleParameterMetadata=true&emulateLocators=true&serverTimezone=UTC", dbName, user, password)); //
+//      dataSource.setUrl(String.format("jdbc:mysql://localhost/%s?user=%s&password=%s&generateSimpleParameterMetadata=true&emulateLocators=true&serverTimezone=UTC", dbName, user, password)); //
+      MySQLContainer mySqlContainer = GeneralTestConfigurator.MY_SQL_CONTAINER;
+      dataSource.setUrl(String.format(mySqlContainer.getJdbcUrl() + "?user=%s&password=%s&generateSimpleParameterMetadata=true&emulateLocators=true&serverTimezone=UTC", mySqlContainer.getUsername(), mySqlContainer.getPassword())); //
       return dataSource;
    }
 

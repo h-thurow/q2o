@@ -36,7 +36,7 @@ public class AnnotationsCheckTest {
    @BeforeClass
    public static void beforeClass() throws NamingException {
 
-      final DataSource dataSource = DataSources.getMySqlDataSource("q2o", "root", "yxcvbnm");
+      final DataSource dataSource = DataSources.getMySqlDataSource();
 
       InitialContext initialContext = new InitialContext();
       Context jdbcCtx = initialContext.createSubcontext("datasources");

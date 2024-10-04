@@ -66,7 +66,7 @@ public class DataTypesNullTest {
             dataSource = DataSources.getH2ServerDataSource();
             break;
          case mysql:
-            dataSource = DataSources.getMySqlDataSource("q2o", "root", "yxcvbnm");
+            dataSource = DataSources.getMySqlDataSource();
             break;
          case sqlite:
             dataSource = DataSources.getSqLiteDataSource(null);

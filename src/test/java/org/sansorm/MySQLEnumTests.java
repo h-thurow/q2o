@@ -21,7 +21,7 @@ public class MySQLEnumTests {
 
    @BeforeClass
    public static void beforeClass(){
-      q2o.initializeTxNone(DataSources.getMySqlDataSource("q2o", "root", "yxcvbnm"));
+      q2o.initializeTxNone(DataSources.getMySqlDataSource());
       q2o.setMySqlMode(true);
    }
 
@@ -43,9 +43,9 @@ public class MySQLEnumTests {
    public void enumToEnumTypeOrdinal2() throws SQLException {
       try {
          Q2Sql.executeUpdate("create table EnumTest (" +
-            "id INTEGER NOT NULL AUTO_INCREMENT" +
-            ", enumToENUMOrdinal ENUM('one', 'two', 'three')" +
-            ", PRIMARY KEY (id))");
+                 "id INTEGER NOT NULL AUTO_INCREMENT" +
+                 ", enumToENUMOrdinal ENUM('one', 'two', 'three')" +
+                 ", PRIMARY KEY (id))");
 
          EnumTest enumTest = new EnumTest();
          Q2Obj.insert(enumTest);

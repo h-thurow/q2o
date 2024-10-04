@@ -50,7 +50,7 @@ public class MySQLDataTypesTest {
 //      dataSource.setGenerateSimpleParameterMetadata(true);
 //      MySQLTest.dataSource = dataSource;
 
-      dataSource = DataSources.getMySqlDataSource("q2o", "root", "yxcvbnm");
+      dataSource = DataSources.getMySqlDataSource();
       q2o.initializeTxNone(dataSource);
       q2o.setMySqlMode(true);
       Database database = Database.mysql;

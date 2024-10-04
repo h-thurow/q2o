@@ -59,7 +59,7 @@ public class LobSybaseSpecificTest {
             dataSource = DataSources.getH2ServerDataSource(/*autoCommit=*/withAutoCommit);
             break;
          case mysql:
-            dataSource = DataSources.getMySqlDataSource("q2o", "root", "yxcvbnm");
+            dataSource = DataSources.getMySqlDataSource();
             break;
          case sqlite:
             dataSource = DataSources.getSqLiteDataSource(null);
