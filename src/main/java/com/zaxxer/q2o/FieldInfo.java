@@ -1,6 +1,7 @@
 package com.zaxxer.q2o;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 

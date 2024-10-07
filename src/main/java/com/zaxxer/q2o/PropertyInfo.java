@@ -1,6 +1,7 @@
 package com.zaxxer.q2o;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;

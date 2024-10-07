@@ -1,6 +1,7 @@
 package com.zaxxer.q2o.entities;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.util.Collection;
 
 /**

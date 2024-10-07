@@ -1,8 +1,9 @@
 package org.sansorm;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Table;
+
 import java.util.Date;
 
 @Table(name = "target_class1")

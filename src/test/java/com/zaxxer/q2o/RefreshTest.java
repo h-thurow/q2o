@@ -3,16 +3,16 @@ package com.zaxxer.q2o;
 import com.zaxxer.q2o.entities.CaseSensitiveDatabasesClass;
 import com.zaxxer.q2o.entities.Left1;
 import com.zaxxer.q2o.entities.Right1;
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.sansorm.DataSources;
 import org.sansorm.testutils.*;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.sql.*;
 
 import static com.zaxxer.q2o.Q2Obj.insert;

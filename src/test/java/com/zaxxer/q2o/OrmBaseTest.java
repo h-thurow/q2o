@@ -1,11 +1,11 @@
 package com.zaxxer.q2o;
 
+import jakarta.persistence.Id;
 import opix.domain.filetypes.filetypes.WinExtensionEntity;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.sansorm.DataSources;
 
-import javax.persistence.Id;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1,5 +1,9 @@
 package com.zaxxer.q2o;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
@@ -7,10 +11,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sansorm.testutils.GeneralTestConfigurator;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.sql.Connection;
 import java.sql.SQLException;
 

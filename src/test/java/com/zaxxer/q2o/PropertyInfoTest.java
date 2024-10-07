@@ -2,14 +2,14 @@ package com.zaxxer.q2o;
 
 import com.zaxxer.q2o.entities.GetterAnnotatedPitMainEntity;
 import com.zaxxer.q2o.entities.Left;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.Table;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 

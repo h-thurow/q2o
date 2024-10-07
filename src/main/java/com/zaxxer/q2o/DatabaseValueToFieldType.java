@@ -1,13 +1,13 @@
 package com.zaxxer.q2o;
 
 import com.zaxxer.q2o.converters.*;
+import jakarta.persistence.AttributeConverter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.AttributeConverter;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;

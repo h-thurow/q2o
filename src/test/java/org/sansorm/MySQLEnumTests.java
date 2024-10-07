@@ -4,11 +4,11 @@ import com.zaxxer.q2o.Q2Obj;
 import com.zaxxer.q2o.Q2Sql;
 import com.zaxxer.q2o.entities.DataTypesNullable;
 import com.zaxxer.q2o.q2o;
+import jakarta.persistence.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.persistence.*;
 import java.sql.SQLException;
 
 import static org.junit.Assert.assertEquals;

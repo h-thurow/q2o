@@ -1,6 +1,6 @@
 package com.zaxxer.q2o.entities;
 
-import javax.persistence.Column;
+import jakarta.persistence.Column;
 
 /**
  * @author Holger Thurow (thurow.h@gmail.com)

@@ -1,6 +1,7 @@
 package com.zaxxer.q2o;
 
 import com.mysql.cj.jdbc.BlobFromLocator;
+import jakarta.persistence.*;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -13,7 +14,6 @@ import org.sansorm.DataSources;
 import org.sansorm.testutils.Database;
 import org.sansorm.testutils.TxMode;
 
-import javax.persistence.*;
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileInputStream;

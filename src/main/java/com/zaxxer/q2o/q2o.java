@@ -1,10 +1,10 @@
 package com.zaxxer.q2o;
 
 import com.zaxxer.q2o.transaction.TxTransactionManager;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.UserTransaction;
 
 import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
 
 /** Single point of q2o configuration */
 public final class q2o {

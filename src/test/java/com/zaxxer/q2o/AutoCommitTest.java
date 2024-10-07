@@ -1,11 +1,11 @@
 package com.zaxxer.q2o;
 
+import jakarta.persistence.Entity;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.sansorm.DataSources;
 
-import javax.persistence.Entity;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;

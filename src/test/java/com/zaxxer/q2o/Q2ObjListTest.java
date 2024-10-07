@@ -1,12 +1,11 @@
 package com.zaxxer.q2o;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.sansorm.testutils.GeneralTestConfigurator;
-
-import javax.persistence.Entity;
-import javax.persistence.Id;
 
 import static org.junit.Assert.assertEquals;
 

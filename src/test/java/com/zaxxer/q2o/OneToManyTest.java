@@ -2,15 +2,15 @@ package com.zaxxer.q2o;
 
 import com.zaxxer.q2o.entities.GetterAnnotatedPitMainEntity;
 import com.zaxxer.q2o.entities.LeftOneToMany;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.sansorm.DataSources;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

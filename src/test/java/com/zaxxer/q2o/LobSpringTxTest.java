@@ -1,6 +1,7 @@
 package com.zaxxer.q2o;
 
 import com.mysql.cj.jdbc.BlobFromLocator;
+import jakarta.persistence.*;
 import org.apache.commons.io.IOUtils;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
@@ -12,7 +13,6 @@ import org.sansorm.testutils.TxMode;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.persistence.*;
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileInputStream;

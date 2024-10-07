@@ -1,9 +1,9 @@
 package com.zaxxer.q2o;
 
 import com.zaxxer.q2o.converters.*;
+import jakarta.persistence.*;
 import org.jetbrains.annotations.NotNull;
 
-import javax.persistence.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;

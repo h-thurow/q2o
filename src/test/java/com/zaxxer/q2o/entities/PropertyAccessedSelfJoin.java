@@ -1,6 +1,6 @@
 package com.zaxxer.q2o.entities;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * @author Holger Thurow (thurow.h@gmail.com)

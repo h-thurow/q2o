@@ -1,10 +1,10 @@
 package com.zaxxer.sansorm;
 
 import com.zaxxer.q2o.q2o;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.UserTransaction;
 
 import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
 
 /** Single point of SansOrm configuration
  * @deprecated

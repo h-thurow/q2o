@@ -1,10 +1,10 @@
 package com.zaxxer.q2o;
 
+import jakarta.persistence.*;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.Test;
 import org.sansorm.DataSources;
 
-import javax.persistence.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;

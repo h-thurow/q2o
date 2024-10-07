@@ -1,10 +1,10 @@
 package com.zaxxer.q2o;
 
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.EnumType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.EnumType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;

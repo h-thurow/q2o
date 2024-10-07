@@ -1,14 +1,9 @@
 package org.sansorm.sqlite;
 
+import jakarta.persistence.*;
 import org.sansorm.DateConverter;
 
 import java.util.Date;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
 @Table
 public class TargetClassSQL

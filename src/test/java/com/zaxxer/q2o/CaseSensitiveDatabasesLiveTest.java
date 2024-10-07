@@ -1,17 +1,16 @@
 package com.zaxxer.q2o;
 
 import com.zaxxer.q2o.entities.DelimitedFields;
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.sansorm.DataSources;
 import org.sansorm.testutils.GeneralTestConfigurator;
-
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

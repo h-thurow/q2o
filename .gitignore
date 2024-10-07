@@ -8,3 +8,4 @@ target
 *.iws
 /src/test/java/org/sansorm/DataSourcesPrivate.java
 /Test results/
+/src/test/java/playground/MySQLContainerTest.java

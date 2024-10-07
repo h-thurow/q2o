@@ -1,13 +1,13 @@
 package com.zaxxer.q2o;
 
 import com.zaxxer.q2o.entities.GetterAnnotatedPitMainEntity;
+import jakarta.persistence.*;
 import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sansorm.testutils.*;
 
-import javax.persistence.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.InvocationTargetException;

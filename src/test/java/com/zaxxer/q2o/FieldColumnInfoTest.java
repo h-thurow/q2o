@@ -1,11 +1,11 @@
 package com.zaxxer.q2o;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import org.junit.Test;
 
-import javax.persistence.Column;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import java.util.Calendar;
 
 import static org.junit.Assert.assertEquals;

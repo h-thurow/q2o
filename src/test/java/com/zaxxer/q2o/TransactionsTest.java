@@ -1,5 +1,7 @@
 package com.zaxxer.q2o;
 
+import jakarta.persistence.Entity;
+import jakarta.transaction.Transaction;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -7,9 +9,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.sansorm.DataSources;
 
-import javax.persistence.Entity;
 import javax.sql.DataSource;
-import javax.transaction.Transaction;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;

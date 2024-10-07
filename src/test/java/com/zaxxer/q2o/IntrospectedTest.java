@@ -1,6 +1,7 @@
 package com.zaxxer.q2o;
 
 import com.zaxxer.q2o.entities.*;
+import jakarta.persistence.*;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.Ignore;
@@ -8,7 +9,6 @@ import org.junit.Test;
 import org.sansorm.TargetClass1;
 import org.sansorm.sqlite.TargetClassSQL;
 
-import javax.persistence.*;
 import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
