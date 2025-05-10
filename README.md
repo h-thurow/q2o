@@ -180,7 +180,7 @@ Starting with V 3.12 you can initialize q2o with Spring Transaction support too.
 &lt;dependency>
     &lt;groupId>com.github.h-thurow&lt;/groupId>
     &lt;artifactId>q2o&lt;/artifactId>
-    &lt;version>3.16&lt;/version>
+    &lt;version>3.19&lt;/version>
 &lt;/dependency>
 </pre>
 or <a href=http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.github.h-thurow%22%20AND%20a%3A%22q2o%22>download from here</a>.

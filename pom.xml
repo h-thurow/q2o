@@ -3,7 +3,7 @@
 
    <groupId>com.github.h-thurow</groupId>
    <artifactId>q2o</artifactId>
-   <version>3.19-SNAPSHOT</version>
+   <version>3.20-SNAPSHOT</version>
    <!--<packaging>bundle</packaging>-->
 
    <name>q2o</name>
@@ -227,7 +227,7 @@
             <extensions>true</extensions>
             <configuration>
                <publishingServerId>central</publishingServerId>
-               <autoPublish>false</autoPublish>
+               <autoPublish>true</autoPublish>
             </configuration>
          </plugin>
          <plugin>
