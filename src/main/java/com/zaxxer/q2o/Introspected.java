@@ -399,13 +399,13 @@ final class Introspected {
    }
 
    private void analyzeDefaultAccess(final List<Field> declaredFields, final Class<?> cl) {
+      final Method[] declaredMethods = cl.getDeclaredMethods();
       declaredFields.forEach(field -> {
          final boolean isDefaultFieldAccess = declaredFields.stream().anyMatch(this::isJpaAnnotated);
          if (isDefaultFieldAccess) {
             fieldsAccessType.put(field, AccessType.FIELD);
          }
          else {
-            final Method[] declaredMethods = cl.getDeclaredMethods();
             if (declaredMethods.length != 0) {
                final boolean isDefaultPropertyAccess = Arrays.stream(declaredMethods).anyMatch(this::isJpaAnnotated);
                fieldsAccessType.put(
