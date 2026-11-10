@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.sansorm.DataSources;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.MySQLContainer;
 
 import javax.sql.DataSource;
@@ -41,10 +42,31 @@ public class GeneralTestConfigurator {
          dbs_to_test.add(new Object[]{true, Database.sybase});
       }
 
-      MY_SQL_CONTAINER = new MySQLContainer("mysql:8.4.2");
-      // be downwards compatible for tests
-      MY_SQL_CONTAINER.setCommand("--lower-case-table-names=1");
-      MY_SQL_CONTAINER.start();
+      // Der MySQL-Container (Testcontainers, benötigt Docker) wird nur gestartet, wenn MySQL auch getestet wird.
+      if (dbs_to_test.stream().anyMatch(params -> params[1] == Database.mysql)) {
+         if (!isDockerAvailable()) {
+            String msg = "MySQL tests require a running Docker environment (Testcontainers). Please start Docker (e.g. Docker Desktop) "
+               + "or remove Database.mysql from dbs_to_test in " + GeneralTestConfigurator.class.getName() + ".";
+            System.err.println("ERROR: " + msg);
+            throw new IllegalStateException(msg);
+         }
+         MY_SQL_CONTAINER = new MySQLContainer("mysql:8.4.2");
+         // be downwards compatible for tests
+         MY_SQL_CONTAINER.setCommand("--lower-case-table-names=1");
+         MY_SQL_CONTAINER.start();
+      }
+      else {
+         MY_SQL_CONTAINER = null;
+      }
+   }
+
+   private static boolean isDockerAvailable() {
+      try {
+         return DockerClientFactory.instance().isDockerAvailable();
+      }
+      catch (Throwable t) {
+         return false;
+      }
    }
 
    @Parameterized.Parameters(name = "springTxSupport={0}, database={1}")
