@@ -52,7 +52,7 @@ public final class DataSources {
       MysqlDataSource dataSource = new MysqlDataSource();
 //      dataSource.setUrl(String.format("jdbc:mysql://localhost/%s?user=%s&password=%s&generateSimpleParameterMetadata=true&emulateLocators=true&serverTimezone=UTC", dbName, user, password)); //
       MySQLContainer mySqlContainer = GeneralTestConfigurator.MY_SQL_CONTAINER;
-      dataSource.setUrl(String.format(mySqlContainer.getJdbcUrl() + "?user=%s&password=%s&generateSimpleParameterMetadata=true&emulateLocators=true&serverTimezone=UTC", mySqlContainer.getUsername(), mySqlContainer.getPassword())); //
+      dataSource.setUrl(String.format(mySqlContainer.getJdbcUrl() + "?user=%s&password=%s&useSSL=false&allowPublicKeyRetrieval=true&generateSimpleParameterMetadata=true&emulateLocators=true&serverTimezone=UTC", mySqlContainer.getUsername(), mySqlContainer.getPassword())); //
       return dataSource;
    }
 
