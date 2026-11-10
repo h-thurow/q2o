@@ -1,12 +1,7 @@
 package com.zaxxer.q2o;
 
-import com.zaxxer.q2o.entities.CompositeKey;
-import com.zaxxer.q2o.entities.FarRight1;
-import com.zaxxer.q2o.entities.Left;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.zaxxer.q2o.entities.*;
+import jakarta.persistence.*;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
@@ -349,6 +344,9 @@ public class Q2ObjTest extends GeneralTestConfigurator {
       }
    }
 
+    /**
+     * smoke test
+     */
    @Test
    public void unknownFieldDelivered() throws SQLException {
       try {
@@ -439,6 +437,197 @@ public class Q2ObjTest extends GeneralTestConfigurator {
          }
       }
 
+   }
+
+   @Table(name = "MyClass")
+   public static class FieldDoesNotMatchAnyColumn extends FieldAccessByIdAnnotation {
+      @Transient
+      private String fieldDoesNotMatchAnyColumn;
+   }
+
+   /**
+    * Ohne @Transient: org.springframework.jdbc.UncategorizedSQLException: ; uncategorized SQLException; SQL state [null]; error code [1]; [SQLITE_ERROR] SQL error or missing database (table MyClass has no column named noGetterSetter); nested exception is org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (table MyClass has no column named noGetterSetter)
+    */
+   @Test
+   public void fieldDoesNotMatchAnyColumn_fieldAccess() {
+      try {
+         switch (database) {
+            case h2Server:
+               Q2Sql.executeUpdate(
+                       "CREATE TABLE MyClass ("
+                               + " id BIGINT NOT NULL IDENTITY PRIMARY KEY"
+                               + ", note VARCHAR(128)"
+                               + ", note2 VARCHAR(128)"
+                               + ", notExistingInEntity VARCHAR(128)"
+                               + ")");
+               break;
+            case mysql:
+               Q2Sql.executeUpdate(
+                       "CREATE TABLE MyClass ("
+                               + " id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT"
+                               + ", note VARCHAR(128)"
+                               + ", note2 VARCHAR(128)"
+                               + ", notExistingInEntity VARCHAR(128)"
+                               + ")");
+               break;
+            case sqlite:
+               Q2Sql.executeUpdate(
+                       "CREATE TABLE MyClass ("
+                               + " id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT"
+                               + ", note VARCHAR(128)"
+                               + ", note2 VARCHAR(128)"
+                               + ", notExistingInEntity VARCHAR(128)"
+                               + ")");
+               break;
+            case sybase:
+               Q2Sql.executeUpdate(
+                       "CREATE TABLE MyClass ("
+                               + " id INTEGER identity"
+                               + ", note VARCHAR(128)"
+                               + ", note2 VARCHAR(128)"
+                               + ", notExistingInEntity VARCHAR(128)"
+                               + ")");
+               break;
+         }
+//         PropertyWithoutGetterSetter instance = new PropertyWithoutGetterSetter();
+         FieldDoesNotMatchAnyColumn instance = new FieldDoesNotMatchAnyColumn();
+
+         Q2Obj.insert(instance);
+
+//         instance = Q2Obj.byId(PropertyWithoutGetterSetter.class, 1);
+         instance = Q2Obj.byId(FieldDoesNotMatchAnyColumn.class, 1);
+
+      }
+      finally {
+         Q2Sql.executeUpdate("drop table MyClass");
+      }
+   }
+
+   @Table(name = "MyClass")
+   public static class FieldDoesNotMatchAnyColumn_Transient extends PropertyAccessByIdAnnotation {
+      @Transient
+      private String fieldDoesNotMatchAnyColumn;
+   }
+
+    /**
+     * Mit einer JPA Annotation an fieldDoesNotMatchAnyColumn wird es in com.zaxxer.q2o.Introspected#analyzeDefaultAccess(java.util.List, java.lang.Class) auf AccessType.FIELD gesetzt.
+     */
+   @Test
+   public void fieldDoesNotMatchAnyColumn_Transient() {
+      try {
+         switch (database) {
+            case h2Server:
+               Q2Sql.executeUpdate(
+                       "CREATE TABLE MyClass ("
+                               + " id BIGINT NOT NULL IDENTITY PRIMARY KEY"
+                               + ", note VARCHAR(128)"
+                               + ", note2 VARCHAR(128)"
+                               + ", notExistingInEntity VARCHAR(128)"
+                               + ")");
+               break;
+            case mysql:
+               Q2Sql.executeUpdate(
+                       "CREATE TABLE MyClass ("
+                               + " id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT"
+                               + ", note VARCHAR(128)"
+                               + ", note2 VARCHAR(128)"
+                               + ", notExistingInEntity VARCHAR(128)"
+                               + ")");
+               break;
+            case sqlite:
+               Q2Sql.executeUpdate(
+                       "CREATE TABLE MyClass ("
+                               + " id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT"
+                               + ", note VARCHAR(128)"
+                               + ", note2 VARCHAR(128)"
+                               + ", notExistingInEntity VARCHAR(128)"
+                               + ")");
+               break;
+            case sybase:
+               Q2Sql.executeUpdate(
+                       "CREATE TABLE MyClass ("
+                               + " id INTEGER identity"
+                               + ", note VARCHAR(128)"
+                               + ", note2 VARCHAR(128)"
+                               + ", notExistingInEntity VARCHAR(128)"
+                               + ")");
+               break;
+         }
+         FieldDoesNotMatchAnyColumn_Transient instance = new FieldDoesNotMatchAnyColumn_Transient();
+         Q2Obj.insert(instance);
+         instance = Q2Obj.byId(FieldDoesNotMatchAnyColumn_Transient.class, 1);
+
+      }
+      finally {
+         Q2Sql.executeUpdate("drop table MyClass");
+      }
+   }
+
+   @Table(name = "MyClass")
+   public static class FieldDoesNotMatchAnyColumn_PropertyAccess extends PropertyAccessByIdAnnotation {
+
+      private String fieldDoesNotMatchAnyColumn;
+
+      @Override
+      @Basic
+      public String getNote()
+      {
+         return "overwritten";
+      }
+   }
+
+    /**
+     * Ohne JPA Annotation an fieldDoesNotMatchAnyColumn aber einer annotierten Methode in FieldDoesNotMatchAnyColumn_PropertyAccess wird es in com.zaxxer.q2o.Introspected#analyzeDefaultAccess(java.util.List, java.lang.Class) auf AccessType.PROPERTY gesetzt und wird "java.beans.IntrospectionException: Method not found: isFieldDoesNotMatchAnyColumn" gemeldet.
+     */
+   @Test
+   public void fieldDoesNotMatchAnyColumn_PropertyAccess() {
+      try {
+         switch (database) {
+            case h2Server:
+               Q2Sql.executeUpdate(
+                       "CREATE TABLE MyClass ("
+                               + " id BIGINT NOT NULL IDENTITY PRIMARY KEY"
+                               + ", note VARCHAR(128)"
+                               + ", note2 VARCHAR(128)"
+                               + ", notExistingInEntity VARCHAR(128)"
+                               + ")");
+               break;
+            case mysql:
+               Q2Sql.executeUpdate(
+                       "CREATE TABLE MyClass ("
+                               + " id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT"
+                               + ", note VARCHAR(128)"
+                               + ", note2 VARCHAR(128)"
+                               + ", notExistingInEntity VARCHAR(128)"
+                               + ")");
+               break;
+            case sqlite:
+               Q2Sql.executeUpdate(
+                       "CREATE TABLE MyClass ("
+                               + " id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT"
+                               + ", note VARCHAR(128)"
+                               + ", note2 VARCHAR(128)"
+                               + ", notExistingInEntity VARCHAR(128)"
+                               + ")");
+               break;
+            case sybase:
+               Q2Sql.executeUpdate(
+                       "CREATE TABLE MyClass ("
+                               + " id INTEGER identity"
+                               + ", note VARCHAR(128)"
+                               + ", note2 VARCHAR(128)"
+                               + ", notExistingInEntity VARCHAR(128)"
+                               + ")");
+               break;
+         }
+         FieldDoesNotMatchAnyColumn_PropertyAccess instance = new FieldDoesNotMatchAnyColumn_PropertyAccess();
+         Q2Obj.insert(instance);
+         instance = Q2Obj.byId(FieldDoesNotMatchAnyColumn_PropertyAccess.class, 1);
+
+      }
+      finally {
+         Q2Sql.executeUpdate("drop table MyClass");
+      }
    }
 
    // ######### Utility methods ######################################################
