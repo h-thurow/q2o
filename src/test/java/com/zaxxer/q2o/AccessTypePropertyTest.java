@@ -246,7 +246,9 @@ public class AccessTypePropertyTest {
    }
 
    /**
-    * Neither property nor field access specified.
+    * Neither property nor field access specified: q2o defaults to field access.
+    * <p>
+    * This deliberately deviates from JPA: "It is an error if a default access type cannot be determined and an access type is not explicitly specified by means of annotations or the XML descriptor." (JSR 317: JavaTM Persistence API, Version 2.0, 2.3.1 Default Access Type) q2o does not require mapping annotations, so entities without any of them are common.
     */
    @Test
    public void fallbackAccess() {
