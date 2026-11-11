@@ -144,13 +144,13 @@ final class Introspected {
       jpaAnnotations.add(PersistenceProperty.class);
       jpaAnnotations.add(PersistenceUnit.class);
       jpaAnnotations.add(PersistenceUnits.class);
-      jpaAnnotations.add(PostLoad.class);
-      jpaAnnotations.add(PostPersist.class);
-      jpaAnnotations.add(PostRemove.class);
-      jpaAnnotations.add(PostUpdate.class);
-      jpaAnnotations.add(PrePersist.class);
-      jpaAnnotations.add(PreRemove.class);
-      jpaAnnotations.add(PreUpdate.class);
+//         jpaAnnotations.add(PostLoad.class); // lifecycle callback, not a mapping annotation
+//         jpaAnnotations.add(PostPersist.class); // lifecycle callback, not a mapping annotation
+//         jpaAnnotations.add(PostRemove.class); // lifecycle callback, not a mapping annotation
+//         jpaAnnotations.add(PostUpdate.class); // lifecycle callback, not a mapping annotation
+//         jpaAnnotations.add(PrePersist.class); // lifecycle callback, not a mapping annotation
+//         jpaAnnotations.add(PreRemove.class); // lifecycle callback, not a mapping annotation
+//         jpaAnnotations.add(PreUpdate.class); // lifecycle callback, not a mapping annotation
       jpaAnnotations.add(PrimaryKeyJoinColumn.class);
       jpaAnnotations.add(PrimaryKeyJoinColumns.class);
       jpaAnnotations.add(QueryHint.class);
@@ -360,33 +360,78 @@ final class Introspected {
     */
    private Collection<Field> getDeclaredFields() {
       fieldsAccessType = new HashMap<>();
-      final LinkedList<Field> declaredFields = new LinkedList<>(Arrays.asList(clazz.getDeclaredFields()));
-      analyzeAccessType(declaredFields, clazz);
+      final List<Class<?>> hierarchy = getEntityHierarchy();
+      final AccessType defaultAccessType = determineDefaultAccessType(hierarchy);
+      final LinkedList<Field> declaredFields = new LinkedList<>();
+      for (final Class<?> c : hierarchy) {
+         final List<Field> df = Arrays.asList(c.getDeclaredFields());
+         declaredFields.addAll(df);
+         analyzeAccessType(df, c, defaultAccessType);
+      }
+      return declaredFields;
+   }
+
+   /**
+    * @return The entity class followed by its mapped superclasses, nearest first.
+    */
+   private List<Class<?>> getEntityHierarchy() {
+      final List<Class<?>> hierarchy = new ArrayList<>();
+      hierarchy.add(clazz);
       for (Class<?> c = clazz.getSuperclass(); c != null; c = c.getSuperclass()) {
          // support fields from MappedSuperclass(es).
          // Do not support ambiguous annotation. Spec says:
          // "A mapped superclass has no separate table defined for it".
          if (c.getAnnotation(MappedSuperclass.class) != null) {
             if (c.getAnnotation(Table.class) == null) {
-               final List<Field> df = Arrays.asList(c.getDeclaredFields());
-               declaredFields.addAll(df);
-               analyzeAccessType(df, c);
+               hierarchy.add(c);
             }
             else {
                throw new RuntimeException("Class " + c.getName() + " annotated with @MappedSuperclass cannot also have @Table annotation");
             }
          }
       }
-      return declaredFields;
+      return hierarchy;
    }
 
    /**
-    * "The default access type of an entity hierarchy is determined by the placement of mapping annotations on the attributes of the entity classes and mapped superclasses of the entity hierarchy that do not explicitly specify an access type. An access type is explicitly specified by means of the Access annotation ... the placement of the mapping annotations on
-    * either the persistent fields or persistent properties of the entity class specifies the access type as being either field- or property-based access respectively." (JSR 317: JavaTM Persistence API, Version 2.0, 2.3.1 Default Access Type).
-    * <p>
+    * Determines the default access type of the entity hierarchy, i.e. of the entity class and its mapped superclasses. Classes with an explicit {@link Access} annotation are not taken into account.
+    * <ul>
+    * <li>Mapping annotations on fields: {@link AccessType#FIELD}.</li>
+    * <li>Mapping annotations on methods: {@link AccessType#PROPERTY}.</li>
+    * <li>Mapping annotations on both fields and methods: an exception is thrown. So the placement of {@link Id} or {@link EmbeddedId} always decides.</li>
+    * <li>No mapping annotations at all: {@link AccessType#FIELD}.</li>
+    * </ul>
+    * "The default access type of an entity hierarchy is determined by the placement of mapping annotations on the attributes of the entity classes and mapped superclasses of the entity hierarchy that do not explicitly specify an access type. ... All such classes in the entity hierarchy whose access type is defaulted in this way must be consistent in their placement of annotations on either fields or properties, such that a single, consistent default access type applies within the hierarchy. ... The behavior of applications that mix the placement of annotations on fields and properties within an entity hierarchy without explicitly specifying the Access annotation is undefined." (JSR 317: JavaTM Persistence API, Version 2.0, 2.3.1 Default Access Type)
+    */
+   private AccessType determineDefaultAccessType(final List<Class<?>> hierarchy) {
+      Member annotatedField = null;
+      Member annotatedMethod = null;
+      for (final Class<?> c : hierarchy) {
+         if (c.getAnnotation(Access.class) != null) {
+            continue;
+         }
+         if (annotatedField == null) {
+            annotatedField = Arrays.stream(c.getDeclaredFields())
+               .filter(f -> !f.isSynthetic() && isMappingAnnotated(f))
+               .findFirst().orElse(null);
+         }
+         if (annotatedMethod == null) {
+            annotatedMethod = Arrays.stream(c.getDeclaredMethods())
+               .filter(m -> !m.isSynthetic() && !m.isBridge() && isMappingAnnotated(m))
+               .findFirst().orElse(null);
+         }
+      }
+      if (annotatedField != null && annotatedMethod != null) {
+         throw new RuntimeException("Mapping annotations must be placed either on fields or on properties within the entity hierarchy of " + clazz.getName()
+            + " (or use @Access): annotated field " + annotatedField + ", annotated method " + annotatedMethod);
+      }
+      return annotatedMethod != null ? AccessType.PROPERTY : AccessType.FIELD;
+   }
+
+   /**
     * "An access type for an individual entity class, mapped superclass, or embeddable class can be specified for that class independent of the default for the entity hierarchy" ... When Access(FIELD) is applied to an entity class it is possible to selectively designate individual attributes within the class for property access ... When Access(PROPERTY) is applied to an entity class it is possible to selectively designate individual attributes within the class for instance variable access. It is not permitted to specify a field as Access(PROPERTY) or a property as Access(FIELD)." (JSR 317: JavaTM Persistence API, Version 2.0, 2.3.2 Explicit Access Type)
     */
-   private void analyzeAccessType(final List<Field> declaredFields, final Class<?> cl) {
+   private void analyzeAccessType(final List<Field> declaredFields, final Class<?> cl, final AccessType defaultAccessType) {
       if (isExplicitPropertyAccess(cl)) {
          analyzeExplicitPropertyAccess(declaredFields, cl);
       }
@@ -394,30 +439,8 @@ final class Introspected {
          analyzeExlicitFieldAccess(declaredFields, cl);
       }
       else {
-         analyzeDefaultAccess(declaredFields, cl);
+         declaredFields.forEach(field -> fieldsAccessType.put(field, defaultAccessType));
       }
-   }
-
-   private void analyzeDefaultAccess(final List<Field> declaredFields, final Class<?> cl) {
-      final Method[] declaredMethods = cl.getDeclaredMethods();
-      declaredFields.forEach(field -> {
-         final boolean isDefaultFieldAccess = declaredFields.stream().anyMatch(this::isJpaAnnotated);
-         if (isDefaultFieldAccess) {
-            fieldsAccessType.put(field, AccessType.FIELD);
-         }
-         else {
-            if (declaredMethods.length != 0) {
-               final boolean isDefaultPropertyAccess = Arrays.stream(declaredMethods).anyMatch(this::isJpaAnnotated);
-               fieldsAccessType.put(
-                  field,
-                  isDefaultPropertyAccess ? AccessType.PROPERTY : AccessType.FIELD);
-            }
-            else {
-               // defaults to field access
-               fieldsAccessType.put(field, AccessType.FIELD);
-            }
-         }
-      });
    }
 
    private void analyzeExlicitFieldAccess(final List<Field> declaredFields, final Class<?> cl) {
@@ -449,33 +472,30 @@ final class Introspected {
       });
    }
 
+   /**
+    * Fields without JavaBean accessors get {@link AccessType#PROPERTY} too, unless annotated with Access(FIELD). {@link PropertyInfo} then excludes them from persistence.
+    */
    private void analyzeExplicitPropertyAccess(final List<Field> declaredFields, final Class<?> cl) {
       declaredFields.forEach(field -> {
-         try {
-            final PropertyDescriptor descriptor = new PropertyDescriptor(field.getName(), cl);
-            final Method readMethod = descriptor.getReadMethod();
-            final Access accessTypeOnMethod = readMethod.getAnnotation(Access.class);
-            final Access accessTypeOnField = field.getDeclaredAnnotation(Access.class);
-            if (accessTypeOnField == null) {
-               if (accessTypeOnMethod == null || accessTypeOnMethod.value() == AccessType.PROPERTY) {
-                  fieldsAccessType.put(field, AccessType.PROPERTY);
-               }
-               else {
-                  throw new RuntimeException("A method can not be of access type field: " + readMethod);
-               }
-            }
-            else if (accessTypeOnField.value() == AccessType.FIELD) {
+         final Access accessTypeOnField = field.getDeclaredAnnotation(Access.class);
+         if (accessTypeOnField != null) {
+            if (accessTypeOnField.value() == AccessType.FIELD) {
                fieldsAccessType.put(field, AccessType.FIELD);
+               return;
             }
-            else {
-               throw new RuntimeException("A field can not be of access type property: " + field);
+            throw new RuntimeException("A field can not be of access type property: " + field);
+         }
+         try {
+            final Method readMethod = new PropertyDescriptor(field.getName(), cl).getReadMethod();
+            final Access accessTypeOnMethod = readMethod.getAnnotation(Access.class);
+            if (accessTypeOnMethod != null && accessTypeOnMethod.value() == AccessType.FIELD) {
+               throw new RuntimeException("A method can not be of access type field: " + readMethod);
             }
          }
          catch (IntrospectionException ignored) {
-            fieldsAccessType.put(field, AccessType.FIELD);
-//            e.printStackTrace();
+            // No accessors: not persistent with property access.
          }
-
+         fieldsAccessType.put(field, AccessType.PROPERTY);
       });
    }
 
@@ -512,7 +532,7 @@ final class Introspected {
       return accessType != null && accessType.value() == AccessType.PROPERTY;
    }
 
-   boolean isJpaAnnotated(final AccessibleObject fieldOrMethod) {
+   boolean isMappingAnnotated(final AccessibleObject fieldOrMethod) {
       final Annotation[] annotations = fieldOrMethod.getDeclaredAnnotations();
       //noinspection ForLoopReplaceableByForEach
       for (int i = 0; i < annotations.length; i++) {

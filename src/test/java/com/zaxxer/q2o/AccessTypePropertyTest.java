@@ -65,8 +65,9 @@ public class AccessTypePropertyTest {
       }
       Introspected introspected = new Introspected(Test.class);
       introspected.introspect();
+      // With property access a field without accessors is not persistent (unless annotated with @Access(FIELD))
       AttributeInfo field = introspected.getFieldColumnInfo("fieldWithoutAccessors");
-      assertNotNull(field);
+      assertNull(field);
       field = introspected.getFieldColumnInfo("field");
       assertNotNull(field);
    }
@@ -295,16 +296,13 @@ public class AccessTypePropertyTest {
          private String field2;
       }
 
-      Introspected introspected = new Introspected(SubTest.class);
-      introspected.introspect();
-      AttributeInfo idInfo = introspected.getFieldColumnInfo("id");
-      assertEquals(PropertyInfo.class, idInfo.getClass());
-      AttributeInfo fieldInfo = introspected.getFieldColumnInfo("field");
-      assertEquals(FieldInfo.class, fieldInfo.getClass());
+      thrown.expect(RuntimeException.class);
+      thrown.expectMessage("Mapping annotations must be placed either on fields or on properties");
+      new Introspected(SubTest.class).introspect();
    }
 
    /**
-    * See {@link #ambiguousAccessType()}.
+    * Mixed placement within the entity hierarchy. An @Access annotation on a single method does not help without @Access on the class. See {@link #mixedDefaultAccessType()}.
     */
    @Test
    public void mixedDefaultAccessType2() {
@@ -339,18 +337,13 @@ public class AccessTypePropertyTest {
          }
       }
 
-      Introspected introspected = new Introspected(SubTest.class);
-      introspected.introspect();
-      AttributeInfo idInfo = introspected.getFieldColumnInfo("id");
-      assertEquals(PropertyInfo.class, idInfo.getClass());
-      AttributeInfo fieldInfo = introspected.getFieldColumnInfo("field");
-      assertEquals(FieldInfo.class, fieldInfo.getClass());
-      AttributeInfo field2Info = introspected.getFieldColumnInfo("field2");
-      assertEquals(FieldInfo.class, field2Info.getClass());
+      thrown.expect(RuntimeException.class);
+      thrown.expectMessage("Mapping annotations must be placed either on fields or on properties");
+      new Introspected(SubTest.class).introspect();
    }
 
    /**
-    * See {@link #mixedDefaultAccessType()}. When the access type of a single class is ambiguous q2o defaults to field access.
+    * See {@link #mixedDefaultAccessType()}. Mixed placement within a single class is not allowed either.
     */
    @Test
    public void ambiguousAccessType() {
@@ -373,12 +366,95 @@ public class AccessTypePropertyTest {
          }
       }
 
+      thrown.expect(RuntimeException.class);
+      thrown.expectMessage("Mapping annotations must be placed either on fields or on properties");
+      new Introspected(Test.class).introspect();
+   }
+
+   /**
+    * The default access type applies to the whole entity hierarchy: a subclass without mapping annotations gets the access type determined by the placement of @Id in its mapped superclass.
+    */
+   @Test
+   public void defaultAccessTypeOfHierarchyAppliesToUnannotatedSubclass() throws IllegalAccessException {
+
+      @MappedSuperclass
+      class Test {
+         private int id;
+
+         @Id
+         public int getId() {
+            return id;
+         }
+
+         public void setId(int id) {
+            this.id = id;
+         }
+      }
+
+      @Table(name = "TEST")
+      class SubTest extends Test {
+         private String field;
+         private String fieldWithoutAccessors;
+
+         public String getField() {
+            return field;
+         }
+
+         public void setField(String value) {
+            // To ensure property access
+            this.field = value.toUpperCase();
+         }
+      }
+
+      Introspected introspected = new Introspected(SubTest.class);
+      introspected.introspect();
+      assertEquals(PropertyInfo.class, introspected.getFieldColumnInfo("id").getClass());
+      AttributeInfo fieldInfo = introspected.getFieldColumnInfo("field");
+      assertEquals(PropertyInfo.class, fieldInfo.getClass());
+      SubTest obj = new SubTest();
+      fieldInfo.setValue(obj, "changed");
+      assertEquals("CHANGED", obj.getField());
+      assertNull(introspected.getFieldColumnInfo("fieldWithoutAccessors"));
+   }
+
+   @Test
+   public void explicitPropertyAccessFieldWithoutAccessorsButAccessField() {
+      @Table(name = "TEST") @Access(value = AccessType.PROPERTY)
+      class Test {
+         private String field;
+         @Access(AccessType.FIELD)
+         private String fieldWithoutAccessors;
+
+         public String getField() {
+            return field;
+         }
+
+         public void setField(String value) {
+            this.field = value;
+         }
+      }
       Introspected introspected = new Introspected(Test.class);
       introspected.introspect();
-      AttributeInfo fieldInfo = introspected.getFieldColumnInfo("field");
-      assertEquals(FieldInfo.class, fieldInfo.getClass());
-      AttributeInfo idInfo = introspected.getFieldColumnInfo("id");
-      assertEquals(FieldInfo.class, idInfo.getClass());
+      assertEquals(FieldInfo.class, introspected.getFieldColumnInfo("fieldWithoutAccessors").getClass());
+      assertEquals(PropertyInfo.class, introspected.getFieldColumnInfo("field").getClass());
+   }
+
+   /**
+    * Lifecycle callbacks like @PrePersist are no mapping annotations and therefore do not determine the access type.
+    */
+   @Test
+   public void lifecycleCallbackDoesNotDetermineAccessType() {
+      @Table(name = "TEST")
+      class Test {
+         @Id
+         private int id;
+
+         @PrePersist
+         public void prePersist() { }
+      }
+      Introspected introspected = new Introspected(Test.class);
+      introspected.introspect();
+      assertEquals(FieldInfo.class, introspected.getFieldColumnInfo("id").getClass());
    }
 
    @Test

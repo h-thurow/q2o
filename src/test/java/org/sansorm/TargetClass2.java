@@ -1,11 +1,17 @@
 package org.sansorm;
 
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
 import java.util.Date;
 
+/**
+ * BaseClass is annotated on fields, this class on methods. Without explicit @Access this mixed placement within the entity hierarchy is not allowed.
+ */
+@Access(AccessType.PROPERTY)
 @Entity
 public class TargetClass2 extends BaseClass
 {
