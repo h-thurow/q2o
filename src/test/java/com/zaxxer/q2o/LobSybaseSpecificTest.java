@@ -1,13 +1,11 @@
 package com.zaxxer.q2o;
 
-import mockit.integration.junit4.JMockit;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
 import org.sansorm.DataSources;
 import org.sansorm.testutils.Database;
 import org.sansorm.testutils.TxMode;
@@ -31,7 +29,6 @@ import static org.junit.Assume.assumeTrue;
  * @author Holger Thurow (thurow.h@gmail.com)
  * @since 22.01.20
  */
-@RunWith(JMockit.class)
 public class LobSybaseSpecificTest {
    @Rule
    public ExpectedException thrown = ExpectedException.none();
