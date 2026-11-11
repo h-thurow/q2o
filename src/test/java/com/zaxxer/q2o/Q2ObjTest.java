@@ -350,44 +350,7 @@ public class Q2ObjTest extends GeneralTestConfigurator {
    @Test
    public void unknownFieldDelivered() throws SQLException {
       try {
-         switch (database) {
-            case h2Server:
-               Q2Sql.executeUpdate(
-                  "CREATE TABLE MyClass ("
-                     + " id BIGINT NOT NULL IDENTITY PRIMARY KEY"
-                     + ", note VARCHAR(128)"
-                     + ", note2 VARCHAR(128)"
-                     + ", notExistingInEntity VARCHAR(128)"
-                     + ")");
-               break;
-            case mysql:
-               Q2Sql.executeUpdate(
-                  "CREATE TABLE MyClass ("
-                     + " id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT"
-                     + ", note VARCHAR(128)"
-                     + ", note2 VARCHAR(128)"
-                     + ", notExistingInEntity VARCHAR(128)"
-                     + ")");
-               break;
-            case sqlite:
-               Q2Sql.executeUpdate(
-                  "CREATE TABLE MyClass ("
-                     + " id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT"
-                     + ", note VARCHAR(128)"
-                     + ", note2 VARCHAR(128)"
-                     + ", notExistingInEntity VARCHAR(128)"
-                     + ")");
-               break;
-            case sybase:
-               Q2Sql.executeUpdate(
-                  "CREATE TABLE MyClass ("
-                     + " id INTEGER identity"
-                     + ", note VARCHAR(128)"
-                     + ", note2 VARCHAR(128)"
-                     + ", notExistingInEntity VARCHAR(128)"
-                     + ")");
-               break;
-         }
+         createMyClassTable();
 
          Q2Sql.executeUpdate(
             "insert into MyClass (note, note2, notExistingInEntity) values('inserted', 'inserted', 'inserted')");
@@ -451,44 +414,7 @@ public class Q2ObjTest extends GeneralTestConfigurator {
    @Test
    public void fieldDoesNotMatchAnyColumn_fieldAccess() {
       try {
-         switch (database) {
-            case h2Server:
-               Q2Sql.executeUpdate(
-                       "CREATE TABLE MyClass ("
-                               + " id BIGINT NOT NULL IDENTITY PRIMARY KEY"
-                               + ", note VARCHAR(128)"
-                               + ", note2 VARCHAR(128)"
-                               + ", notExistingInEntity VARCHAR(128)"
-                               + ")");
-               break;
-            case mysql:
-               Q2Sql.executeUpdate(
-                       "CREATE TABLE MyClass ("
-                               + " id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT"
-                               + ", note VARCHAR(128)"
-                               + ", note2 VARCHAR(128)"
-                               + ", notExistingInEntity VARCHAR(128)"
-                               + ")");
-               break;
-            case sqlite:
-               Q2Sql.executeUpdate(
-                       "CREATE TABLE MyClass ("
-                               + " id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT"
-                               + ", note VARCHAR(128)"
-                               + ", note2 VARCHAR(128)"
-                               + ", notExistingInEntity VARCHAR(128)"
-                               + ")");
-               break;
-            case sybase:
-               Q2Sql.executeUpdate(
-                       "CREATE TABLE MyClass ("
-                               + " id INTEGER identity"
-                               + ", note VARCHAR(128)"
-                               + ", note2 VARCHAR(128)"
-                               + ", notExistingInEntity VARCHAR(128)"
-                               + ")");
-               break;
-         }
+         createMyClassTable();
          FieldDoesNotMatchAnyColumn instance = new FieldDoesNotMatchAnyColumn();
          instance.setNote("note");
          instance.fieldDoesNotMatchAnyColumn = "not persisted";
@@ -522,44 +448,7 @@ public class Q2ObjTest extends GeneralTestConfigurator {
    @Test
    public void fieldDoesNotMatchAnyColumn_PropertyAccess() {
       try {
-         switch (database) {
-            case h2Server:
-               Q2Sql.executeUpdate(
-                       "CREATE TABLE MyClass ("
-                               + " id BIGINT NOT NULL IDENTITY PRIMARY KEY"
-                               + ", note VARCHAR(128)"
-                               + ", note2 VARCHAR(128)"
-                               + ", notExistingInEntity VARCHAR(128)"
-                               + ")");
-               break;
-            case mysql:
-               Q2Sql.executeUpdate(
-                       "CREATE TABLE MyClass ("
-                               + " id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT"
-                               + ", note VARCHAR(128)"
-                               + ", note2 VARCHAR(128)"
-                               + ", notExistingInEntity VARCHAR(128)"
-                               + ")");
-               break;
-            case sqlite:
-               Q2Sql.executeUpdate(
-                       "CREATE TABLE MyClass ("
-                               + " id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT"
-                               + ", note VARCHAR(128)"
-                               + ", note2 VARCHAR(128)"
-                               + ", notExistingInEntity VARCHAR(128)"
-                               + ")");
-               break;
-            case sybase:
-               Q2Sql.executeUpdate(
-                       "CREATE TABLE MyClass ("
-                               + " id INTEGER identity"
-                               + ", note VARCHAR(128)"
-                               + ", note2 VARCHAR(128)"
-                               + ", notExistingInEntity VARCHAR(128)"
-                               + ")");
-               break;
-         }
+         createMyClassTable();
          FieldDoesNotMatchAnyColumn_PropertyAccess instance = new FieldDoesNotMatchAnyColumn_PropertyAccess();
          instance.setNote2("note2");
          instance.fieldDoesNotMatchAnyColumn = "not persisted";
@@ -578,7 +467,65 @@ public class Q2ObjTest extends GeneralTestConfigurator {
       }
    }
 
+   @Table(name = "MyClass")
+   public static class SetterOnSelect_PropertyAccess extends PropertyAccessByIdAnnotation {
+      @Override
+      public void setNote2(String note2) {
+         super.setNote2("set via setter: " + note2);
+      }
+   }
+
+   /**
+    * With property access the values read from the database are set via setters.
+    */
+   @Test
+   public void setterIsUsedOnSelect_PropertyAccess() {
+      try {
+         createMyClassTable();
+         // Insert with field access, so the setter is not involved in writing.
+         FieldDoesNotMatchAnyColumn written = new FieldDoesNotMatchAnyColumn();
+         written.setNote2("note2");
+         Q2Obj.insert(written);
+
+         SetterOnSelect_PropertyAccess loaded = Q2Obj.byId(SetterOnSelect_PropertyAccess.class, written.getId());
+         assertEquals("set via setter: note2", loaded.getNote2());
+
+         // The database still holds the original value.
+         assertEquals("note2", Q2Obj.byId(FieldDoesNotMatchAnyColumn.class, written.getId()).getNote2());
+      }
+      finally {
+         Q2Sql.executeUpdate("drop table MyClass");
+      }
+   }
+
    // ######### Utility methods ######################################################
+
+   private void createMyClassTable() {
+      final String idColumn;
+      switch (database) {
+         case h2Server:
+            idColumn = "id BIGINT NOT NULL IDENTITY PRIMARY KEY";
+            break;
+         case mysql:
+            idColumn = "id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT";
+            break;
+         case sqlite:
+            idColumn = "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT";
+            break;
+         case sybase:
+            idColumn = "id INTEGER identity";
+            break;
+         default:
+            throw new IllegalStateException("Unsupported database: " + database);
+      }
+      Q2Sql.executeUpdate(
+         "CREATE TABLE MyClass ("
+            + " " + idColumn
+            + ", note VARCHAR(128)"
+            + ", note2 VARCHAR(128)"
+            + ", notExistingInEntity VARCHAR(128)"
+            + ")");
+   }
 
    private int getParameterCount(String s) {
       int count = 0;
