@@ -30,8 +30,7 @@ class PropertyInfo extends AttributeInfo {
          name = propertyDescriptor.getName();
       }
       catch (IntrospectionException ignored) {
-         // In case of fields with no getters/setters according to JavaBean conventions.
-         ignored.printStackTrace();
+         // In case of fields with no getters/setters according to JavaBean conventions: not persistent with property access.
          toBeConsidered = false;
       }
    }
