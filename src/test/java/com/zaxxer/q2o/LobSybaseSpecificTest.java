@@ -3,6 +3,7 @@ package com.zaxxer.q2o;
 import mockit.integration.junit4.JMockit;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -24,6 +25,7 @@ import java.sql.SQLException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Holger Thurow (thurow.h@gmail.com)
@@ -41,6 +43,12 @@ public class LobSybaseSpecificTest {
    public boolean withAutoCommit = true;
    public TxMode txMode = TxMode.springTx;
    public Database database = Database.sybase;
+
+   // Damit Sybase getestet wird, müssen Umgebungsvariablen gesetzt werden. Siehe org.sansorm.DataSources.getSybaseDataSource()
+   @BeforeClass
+   public static void checkSybaseConfigured() {
+      assumeTrue("SYBASE_URL not set - Sybase tests skipped", System.getenv("SYBASE_URL") != null);
+   }
 
    @Before // not @BeforeClass to have fresh table in each test, also sde
    public void setUp() throws IOException, SQLException

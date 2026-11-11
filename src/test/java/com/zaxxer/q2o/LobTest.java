@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -35,20 +36,28 @@ public class LobTest {
 
    @Rule
    public ExpectedException thrown = ExpectedException.none();
+   private static final Collection<Object[]> dbs_to_test;
 
-   // TODO Test MySQL with emulateLocators=false (default) too.
-   @Parameterized.Parameters(name = "autocommit={0}, txMode={1} database={2}")
-   public static Collection<Object[]> data() {
-      Object[][] params = {
+   static {
+      dbs_to_test = new ArrayList<>();
+      dbs_to_test.addAll(Arrays.asList(new Object[][]{
 //         {true, TxMode.txSimple, Database.h2Server}, {true, TxMode.txSimple, Database.mysql}
-         {true, TxMode.txSimple, Database.h2Server}, {true, TxMode.txSimple, Database.mysql}, {true, TxMode.txSimple, Database.sybase}
+              {true, TxMode.txSimple, Database.h2Server}, {true, TxMode.txSimple, Database.mysql},
 //         {true, TxMode.txSimple, Database.mysql}
 //         {true, TxMode.txSimple, Database.sybase}
 //         {true, TxMode.txSimple, Database.h2Server}
 //         {true, TxMode.txSimple, Database.sqlite} // java.sql.Blob not supported.
+      }));
 
-      };
-      return Arrays.asList(params);
+      if (System.getenv().containsKey("SYBASE_URL")) {
+         dbs_to_test.add(new Object[]{true, TxMode.txSimple, Database.sybase});
+      }
+   }
+
+   // TODO Test MySQL with emulateLocators=false (default) too.
+   @Parameterized.Parameters(name = "autocommit={0}, txMode={1} database={2}")
+   public static Collection<Object[]> data() {
+      return dbs_to_test;
    }
    private DataSource dataSource;
 
