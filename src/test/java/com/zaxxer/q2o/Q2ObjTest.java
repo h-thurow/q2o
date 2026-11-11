@@ -489,74 +489,14 @@ public class Q2ObjTest extends GeneralTestConfigurator {
                                + ")");
                break;
          }
-//         PropertyWithoutGetterSetter instance = new PropertyWithoutGetterSetter();
          FieldDoesNotMatchAnyColumn instance = new FieldDoesNotMatchAnyColumn();
-
+         instance.setNote("note");
+         instance.fieldDoesNotMatchAnyColumn = "not persisted";
          Q2Obj.insert(instance);
 
-//         instance = Q2Obj.byId(PropertyWithoutGetterSetter.class, 1);
-         instance = Q2Obj.byId(FieldDoesNotMatchAnyColumn.class, 1);
-
-      }
-      finally {
-         Q2Sql.executeUpdate("drop table MyClass");
-      }
-   }
-
-   @Table(name = "MyClass")
-   public static class FieldDoesNotMatchAnyColumn_Transient extends PropertyAccessByIdAnnotation {
-      @Transient
-      private String fieldDoesNotMatchAnyColumn;
-   }
-
-    /**
-     * Mit einer JPA Annotation an fieldDoesNotMatchAnyColumn wird es in com.zaxxer.q2o.Introspected#analyzeDefaultAccess(java.util.List, java.lang.Class) auf AccessType.FIELD gesetzt.
-     */
-   @Test
-   public void fieldDoesNotMatchAnyColumn_Transient() {
-      try {
-         switch (database) {
-            case h2Server:
-               Q2Sql.executeUpdate(
-                       "CREATE TABLE MyClass ("
-                               + " id BIGINT NOT NULL IDENTITY PRIMARY KEY"
-                               + ", note VARCHAR(128)"
-                               + ", note2 VARCHAR(128)"
-                               + ", notExistingInEntity VARCHAR(128)"
-                               + ")");
-               break;
-            case mysql:
-               Q2Sql.executeUpdate(
-                       "CREATE TABLE MyClass ("
-                               + " id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT"
-                               + ", note VARCHAR(128)"
-                               + ", note2 VARCHAR(128)"
-                               + ", notExistingInEntity VARCHAR(128)"
-                               + ")");
-               break;
-            case sqlite:
-               Q2Sql.executeUpdate(
-                       "CREATE TABLE MyClass ("
-                               + " id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT"
-                               + ", note VARCHAR(128)"
-                               + ", note2 VARCHAR(128)"
-                               + ", notExistingInEntity VARCHAR(128)"
-                               + ")");
-               break;
-            case sybase:
-               Q2Sql.executeUpdate(
-                       "CREATE TABLE MyClass ("
-                               + " id INTEGER identity"
-                               + ", note VARCHAR(128)"
-                               + ", note2 VARCHAR(128)"
-                               + ", notExistingInEntity VARCHAR(128)"
-                               + ")");
-               break;
-         }
-         FieldDoesNotMatchAnyColumn_Transient instance = new FieldDoesNotMatchAnyColumn_Transient();
-         Q2Obj.insert(instance);
-         instance = Q2Obj.byId(FieldDoesNotMatchAnyColumn_Transient.class, 1);
-
+         FieldDoesNotMatchAnyColumn loaded = Q2Obj.byId(FieldDoesNotMatchAnyColumn.class, instance.getId());
+         assertEquals("note", loaded.getNote());
+         assertNull(loaded.fieldDoesNotMatchAnyColumn);
       }
       finally {
          Q2Sql.executeUpdate("drop table MyClass");
@@ -577,7 +517,7 @@ public class Q2ObjTest extends GeneralTestConfigurator {
    }
 
     /**
-     * Ohne JPA Annotation an fieldDoesNotMatchAnyColumn aber einer annotierten Methode in FieldDoesNotMatchAnyColumn_PropertyAccess wird es in com.zaxxer.q2o.Introspected#analyzeDefaultAccess(java.util.List, java.lang.Class) auf AccessType.PROPERTY gesetzt und wird "java.beans.IntrospectionException: Method not found: isFieldDoesNotMatchAnyColumn" gemeldet.
+     * The entity hierarchy is annotated on methods, so property access applies. fieldDoesNotMatchAnyColumn has no accessors and is therefore not persistent.
      */
    @Test
    public void fieldDoesNotMatchAnyColumn_PropertyAccess() {
@@ -621,9 +561,17 @@ public class Q2ObjTest extends GeneralTestConfigurator {
                break;
          }
          FieldDoesNotMatchAnyColumn_PropertyAccess instance = new FieldDoesNotMatchAnyColumn_PropertyAccess();
+         instance.setNote2("note2");
+         instance.fieldDoesNotMatchAnyColumn = "not persisted";
          Q2Obj.insert(instance);
-         instance = Q2Obj.byId(FieldDoesNotMatchAnyColumn_PropertyAccess.class, 1);
 
+         FieldDoesNotMatchAnyColumn_PropertyAccess loaded = Q2Obj.byId(FieldDoesNotMatchAnyColumn_PropertyAccess.class, instance.getId());
+         assertEquals("note2", loaded.getNote2());
+         assertNull(loaded.fieldDoesNotMatchAnyColumn);
+
+         // Property access: the value of the overridden getter was written, not the field. Read back with field access.
+         FieldDoesNotMatchAnyColumn fieldAccess = Q2Obj.byId(FieldDoesNotMatchAnyColumn.class, instance.getId());
+         assertEquals("overwritten", fieldAccess.getNote());
       }
       finally {
          Q2Sql.executeUpdate("drop table MyClass");
