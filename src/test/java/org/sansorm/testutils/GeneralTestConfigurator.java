@@ -29,10 +29,10 @@ public class GeneralTestConfigurator {
       dbs_to_test = new ArrayList<>();
 
       dbs_to_test.addAll(Arrays.asList(new Object[][]{
-//              {false, Database.h2Server}, {true, Database.h2Server}, {false, Database.mysql}, {true, Database.mysql}, {false, Database.sqlite}, {true, Database.sqlite},
+              {false, Database.h2Server}, {true, Database.h2Server}, {false, Database.mysql}, {true, Database.mysql}, {false, Database.sqlite}, {true, Database.sqlite},
 //         {false, Database.mysql}
 //         {false, Database.h2Server}
-         {true, Database.sqlite}
+//         {true, Database.sqlite}
 //           {true, Database.sybase}
       }));
 
