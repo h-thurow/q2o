@@ -127,6 +127,56 @@ There are much more useful methods like:
 
 Many of these methods can also work with lists of objects. [See Javadoc.](http://javadoc.io/page/com.github.h-thurow/q2o/latest/com/zaxxer/q2o/Q2ObjList.html)
 
+### Exclude Properties or Fields from Persistence
+
+Not every field or property of an entity has a corresponding column in the database. How to exclude it depends on the access type.
+
+**Field access** (mapping annotations on fields, or `@Access(AccessType.FIELD)`): every field is persistent, whether it has a getter and setter or not. Exclude a field with `@Transient` or the Java modifier `transient`. Static and final fields are never persistent.
+```Java
+@Entity
+@Table(name = "customer")
+public class Customer {
+   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+   private int id;
+
+   @Transient
+   private String displayName;
+   ...
+}
+```
+
+**Property access** (mapping annotations on getters, or `@Access(AccessType.PROPERTY)`): only getter/setter pairs following the JavaBeans conventions are persistent. A field without getter and setter is ignored, no `@Transient` is needed. To exclude a property that has a getter and setter, put `@Transient` on the getter, not on the field.
+```Java
+@Entity
+@Table(name = "customer")
+@Access(AccessType.PROPERTY)
+public class Customer {
+   private int id;
+   private String displayName;
+
+   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+   public int getId() { return id; }
+   public void setId(int id) { this.id = id; }
+
+   @Transient
+   public String getDisplayName() { return displayName; }
+   public void setDisplayName(String displayName) { this.displayName = displayName; }
+}
+```
+
+**Error messages you might see otherwise:**
+
+* A field or property is not excluded, so q2o includes it in INSERT, UPDATE and SELECT statements and the database complains about the missing column. This also happens with explicit `@Access(AccessType.PROPERTY)` and `@Transient` on the field instead of the getter, because there the annotation on the field is not evaluated. The message depends on the database, e.g.:
+```
+H2:     org.h2.jdbc.JdbcSQLException: Column "DISPLAYNAME" not found; SQL statement:
+        INSERT INTO customer(displayName,...) VALUES (?,...)
+SQLite: org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (table customer has no column named displayName)
+```
+* Without an `@Access` annotation on the class, `@Transient` counts as a mapping annotation like any other. `@Transient` on a field while `@Id` sits on a getter (also in a mapped superclass) mixes both styles within the entity hierarchy, and q2o refuses the class:
+```
+java.lang.RuntimeException: Mapping annotations must be placed either on fields or on properties within the entity hierarchy of com.example.Customer (or use @Access): annotated field private java.lang.String com.example.Customer.displayName, annotated method public int com.example.Customer.getId()
+```
+
 ### Objects are not everything
 
 Often it is more suitable and more performant to query values or to update single values not objects. This is where [Q2Sql](https://javadoc.io/static/com.github.h-thurow/q2o/3.16/com/zaxxer/q2o/Q2Sql.html) class comes into play.
