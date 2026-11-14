@@ -521,9 +521,9 @@ public class Q2ObjTest extends GeneralTestConfigurator {
       Q2Sql.executeUpdate(
          "CREATE TABLE MyClass ("
             + " " + idColumn
-            + ", note VARCHAR(128)"
-            + ", note2 VARCHAR(128)"
-            + ", notExistingInEntity VARCHAR(128)"
+            + ", note VARCHAR(128) NULL"
+            + ", note2 VARCHAR(128) NULL"
+            + ", notExistingInEntity VARCHAR(128) NULL"
             + ")");
    }
 
