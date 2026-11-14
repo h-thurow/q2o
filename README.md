@@ -20,7 +20,7 @@ Automatic type conversion between java.util.Date or java.util.Calendar and DATE,
 
 More convenient methods.
 
-API clean-up **(still subject of change!)**. There is a SansOrm 3.7 compatibility layer.
+API clean-up. There is a SansOrm 3.7 compatibility layer.
 
 Numerous tests added to stabilize further development.
 
